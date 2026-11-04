@@ -36,7 +36,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 
 | App | O que é | Repositório | Estado |
 |-----|---------|-------------|--------|
-| **Acervo** | Gerenciador de conhecimento (Temas + referências) | (a criar) | Em planejamento |
+| **Acervo** | Gerenciador de conhecimento (Temas + referências) | github.com/Lucas-Wesley/home-lab-acervo | Em planejamento |
 | **Biblioteca Digital** | Leitor/biblioteca de PDF e EPUB com anotações | github.com/Lucas-Wesley/biblioteca-digital | Em planejamento |
 | **Flashcards** | App estilo Anki (Vue + Go + SQLite) | github.com/Lucas-Wesley/flashcards | Repo já existe (plano) |
 | **Hub** | Interface central que reúne todos | github.com/Lucas-Wesley/hub-home-lab-web | Último a construir |

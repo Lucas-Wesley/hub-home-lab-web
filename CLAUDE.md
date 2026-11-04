@@ -11,7 +11,7 @@ Aplicações **independentes** (cada uma com banco + API próprios) que se falam
 ## Apps e repositórios
 | App | Repo | Papel |
 |-----|------|-------|
-| Acervo | (a criar) | Gerenciador de conhecimento (Temas + referências) |
+| Acervo | github.com/Lucas-Wesley/home-lab-acervo | Gerenciador de conhecimento (Temas + referências) — **2º a desenvolver** |
 | Biblioteca Digital | github.com/Lucas-Wesley/biblioteca-digital | Leitor/biblioteca PDF+EPUB (PWA) com anotações — **1º a desenvolver** |
 | Flashcards | github.com/Lucas-Wesley/flashcards | App estilo Anki |
 | Hub | github.com/Lucas-Wesley/hub-home-lab-web | Este repo — interface central (último) |
