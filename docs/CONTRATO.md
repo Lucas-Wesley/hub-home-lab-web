@@ -63,6 +63,15 @@ Cada app define a própria API; estes são os pontos de contato entre eles:
 | Biblioteca Digital | `GET /api/v1/livros` | lista a biblioteca |
 | Biblioteca Digital | `GET /api/v1/livros/{id}` | detalhes + anotações de um livro |
 
+### Primeira integração feita (06/11/2026)
+
+**Acervo → Flashcards**, com um endpoint próprio, **sem** o contrato comum (que segue sem definir):
+`POST /api/textos` no Flashcards recebe `{titulo, baralho, contexto, texto, link}` e cria um pedido à IA; o Acervo
+acompanha e decide a proposta por `GET /api/geracoes/{id}` e `POST /api/geracoes/{id}/{aprovar|descartar|refazer}`.
+A chamada vai pela rede interna do Docker (`http://flashcards:8080`), sem passar pelo Caddy. Detalhes em
+`acervo/docs/DECISOES.md` (D28) e `flashcards/docs/DECISOES.md` (F28). Quando o contrato existir, esse envio vira um
+Fragmento.
+
 ---
 
 ## 4. Fluxos de exemplo

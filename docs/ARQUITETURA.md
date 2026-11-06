@@ -49,7 +49,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 |-----------|----------------|
 | Biblioteca Digital → Acervo | Capítulo/parágrafo vira **texto de referência** ou alimenta um **Tema** |
 | Biblioteca Digital → Flashcards | **Seleção** de texto vira **flashcard** |
-| Acervo → Flashcards | Trecho de referência/Tema vira **flashcard** |
+| Acervo → Flashcards | Tema, capítulo ou Referência vira proposta de **flashcards** (feito: D28 / F28) |
 | Hub → todos | Lê as APIs e mostra tudo junto |
 
 Toda integração é uma **chamada de API** que troca um **Fragmento de Conteúdo** — ver
