@@ -36,6 +36,9 @@
 **Comum às duas:**
 - Mesma infraestrutura (ver [`ARQUITETURA.md`](ARQUITETURA.md) §4).
 - Design system único, em `docs/DESIGN-SYSTEM.md` de cada app.
+- **Ajustes → Sugestões de melhoria** em cada app, com a mesma API (`/api/sugestoes`). O Flashcards
+  e as próximas apps já nascem com ela.
+- No Acervo, Ajustes também mostra as **instruções da IA** de cada etapa, editáveis pelo celular.
 
 **Integrações:** nenhuma ainda. O contrato comum continua não definido, e vai nascer quando o
 primeiro par de apps precisar conversar. O candidato natural é Biblioteca/Acervo → Flashcards.

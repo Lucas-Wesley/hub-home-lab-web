@@ -21,6 +21,12 @@ Aplicações **independentes** (cada uma com banco + API próprios) que se falam
 - Cada app roda como **container** (Docker Compose) na VM `apps` (`192.168.1.20`), atrás do Caddy. Detalhes em `docs/ARQUITETURA.md` §4; estado atual em `docs/ROADMAP.md` ("Onde paramos").
 - **Armazenamento:** somente o **disco interno do M920q**; não haverá SSD externo.
 
+## Sugestões de melhoria dos apps
+Cada app tem **Ajustes → Sugestões de melhoria** (contrato em `docs/ARQUITETURA.md` §4). Quando o Lucas pedir para "ver as sugestões":
+1. Ler as novas: `curl -s --cacert certs/homelab-ca.crt https://192.168.1.20:<porta>/api/sugestoes` (8443 Biblioteca, 8444 Acervo; o `certs/` fica na pasta `homelab`).
+2. Conferir com ele o que não estiver claro, fazer, testar e publicar.
+3. Marcar cada uma: `PATCH /api/sugestoes/{id}` com `{"estado":"feita","resposta":"<o que mudou>"}` (ou `descartada`, com o motivo).
+
 ## Regras e convenções
 - **Conteúdo do Acervo NÃO sobe pro GitHub** (versionado localmente no homelab). Código das apps pode.
 - Construir **cada app sozinho primeiro**; só criar endpoint de integração quando **os dois lados existirem**; **não definir o contrato comum ainda**.

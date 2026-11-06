@@ -83,6 +83,17 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
 - **Visual:** design system comum (neutros, azul e terracota só como contraste, vidro com blur,
   listas finas, Literata na leitura). A especificação fica em `docs/DESIGN-SYSTEM.md` de cada app,
   igual em todas.
+- **Ajustes e sugestões de melhoria:** toda app tem **Ajustes** no fim do menu, com a seção
+  **Sugestões de melhoria**. O Lucas anota ali o que pode melhorar; depois pede ao Claude Code para
+  ver as sugestões, e ele lê, faz e responde. A API é a mesma em todas (campos em português):
+  - `GET /api/sugestoes`: lista, com as novas primeiro.
+  - `PUT /api/sugestoes/{id}` com `{texto, tela}`: cria. O id é gerado no aparelho, então reenviar
+    não duplica.
+  - `PATCH /api/sugestoes/{id}` com `{estado, resposta}`: o que o Claude Code usa ao terminar.
+    Estados: `nova`, `feita` ou `descartada`.
+  - `DELETE /api/sugestoes/{id}`.
+  - Cada sugestão tem `id`, `texto`, `tela` (de onde o Lucas veio), `estado`, `resposta`,
+    `criada_em` e `atualizada_em`.
 
 ---
 
