@@ -86,6 +86,41 @@ Repo: `github.com/Lucas-Wesley/flashcards`.
 **Último sempre.** Só consome as APIs dos outros; construir cedo trava tudo.
 Repo: `github.com/Lucas-Wesley/hub-home-lab-web`.
 
+#### Pedido para o Hub: gestão do servidor e do Claude (anotado em 06/11/2026, não começado)
+
+O Lucas quer gerenciar pelo Hub, num lugar só:
+
+- **Arquivos temporários e sem uso de cada app:** ver quanto ocupam e limpar. Exemplos:
+  - os históricos de sessão do Claude em `/srv/data/<app>/home/.claude/projects` (um `.jsonl` por tarefa);
+  - os backups em `.claude/backups`;
+  - as pastas de trabalho das tarefas;
+  - a mídia sem uso.
+- **Claude:**
+  - a chave (`CLAUDE_CODE_OAUTH_TOKEN` em `/opt/apps/<app>.env`), só para ver o estado e trocar, sem nunca mostrar o valor;
+  - o que está sendo pesquisado agora e o que já foi, em cada app;
+  - limpar o histórico;
+  - talvez uma memória por app (ver abaixo).
+- **Servidor:** memória, processamento e armazenamento, no total e por app/contêiner; o que pesa
+  e custa mais.
+
+**Como o Claude roda hoje (para decidir a parte de memória):**
+- Cada tarefa é um `claude -p` independente: começa do zero e não lembra das anteriores (sem
+  `--resume`/`--continue`). As pesquisas são efêmeras; o contexto vem todo do prompt e das
+  instruções em `regras/`.
+- Cada app roda o Claude no próprio contêiner, com `HOME=/data/home` próprio. Então os históricos e
+  as configurações **já ficam separados por app** (Flashcards, Acervo), em `/srv/data/<app>/home`.
+- O que fica gravado é só o **registro** de cada sessão (`.claude/projects/…/*.jsonl`), que nenhuma
+  tarefa relê. Desde 06/11/2026 o Flashcards roda com `--no-session-persistence` e não grava mais
+  nada. O Acervo ainda grava.
+- Uma memória de verdade (por exemplo, "o Lucas prefere cartões curtos") seria um arquivo de texto
+  por app que o app inclui no prompt, editável no Ajustes, como já são as instruções. Não seria uma
+  sessão longa do Claude.
+
+**Ainda por decidir:** como o Hub lê esses dados. Cada app expondo uma API de "manutenção"
+(espaço, tarefas, limpar)? Um agente no host para os números do servidor (por exemplo,
+`node-exporter`/cAdvisor ou um endpoint simples)? Seguir o princípio de não definir o contrato
+antes de precisar.
+
 ---
 
 ## Princípios (valem pra qualquer ordem)
