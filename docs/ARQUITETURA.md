@@ -38,7 +38,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 |-----|---------|-------------|--------|
 | **Acervo** | Gerenciador de conhecimento (Temas + referências) | github.com/Lucas-Wesley/home-lab-acervo | No ar (`:8444`) |
 | **Biblioteca Digital** | Leitor/biblioteca de PDF e EPUB com anotações | github.com/Lucas-Wesley/biblioteca-digital | No ar (`:8443`) |
-| **Flashcards** | App estilo Anki (Vue + Go + SQLite) | github.com/Lucas-Wesley/flashcards | Próximo a construir |
+| **Flashcards** | App estilo Anki (Vue + Go + SQLite) | github.com/Lucas-Wesley/flashcards | No ar (`:8445`) |
 | **Hub** | Interface central que reúne todos | github.com/Lucas-Wesley/hub-home-lab-web | Último a construir |
 
 ---
@@ -74,7 +74,7 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
   offline.
 - **Onde roda:** VM `apps` (`192.168.1.20`) no Proxmox, com **Docker Compose**, um container por
   app e dados em `/srv/data/<app>`.
-- **Proxy:** **Caddy** com `tls internal`, uma porta por app (`:8443` Biblioteca, `:8444` Acervo).
+- **Proxy:** **Caddy** com `tls internal`, uma porta por app (`:8443` Biblioteca, `:8444` Acervo, `:8445` Flashcards).
   - O certificado raiz para instalar nos aparelhos fica em `http://192.168.1.20/ca.crt`.
   - A configuração está na pasta `proxy/` do homelab, copiada para `/opt/proxy`.
 - **Publicar:** `git push` na main e `./deploy.sh` de cada app.
@@ -100,7 +100,7 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
 ## 5. Ordem de construção
 
 ```
-1. Biblioteca Digital (no ar)  →  2. Acervo (no ar)  →  3. Flashcards + APIs de integração
+1. Biblioteca Digital (no ar)  →  2. Acervo (no ar)  →  3. Flashcards (no ar) + APIs de integração
                                                           (próximo)  →  4. Hub
 ```
 

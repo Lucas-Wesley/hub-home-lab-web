@@ -11,7 +11,7 @@
 |-----|--------|----------|
 | Biblioteca Digital | **No ar**, em uso | `https://192.168.1.20:8443` |
 | Acervo | **No ar**, primeira versão completa | `https://192.168.1.20:8444` |
-| Flashcards | **Próximo passo** | — |
+| Flashcards | **No ar**, primeira versão (06/11/2026) | `https://192.168.1.20:8445` |
 | Hub | Último | — |
 
 **Biblioteca Digital:**
@@ -33,7 +33,14 @@
   planejada em `home-lab-acervo/docs/PESQUISADOR.md`.
 - Detalhes em `home-lab-acervo/docs/DECISOES.md` e `CONSTRUCAO.md`.
 
-**Comum às duas:**
+**Flashcards:**
+- Baralhos, notas de frente e verso ou nos dois sentidos (vocabulário), estudo com quatro notas,
+  desfazer, busca, suspensão e importação de texto/CSV.
+- Agendamento FSRS-6 (`go-fsrs`), com o dia de estudo virando às 4h em Brasília.
+- Ainda sem mídia (imagem e áudio), sem estudo offline e sem integração.
+- Detalhes e próximos passos em `flashcards/docs/DECISOES.md`.
+
+**Comum às três:**
 - Mesma infraestrutura (ver [`ARQUITETURA.md`](ARQUITETURA.md) §4).
 - Design system único, em `docs/DESIGN-SYSTEM.md` de cada app.
 - **Ajustes → Sugestões de melhoria** em cada app, com a mesma API (`/api/sugestoes`). O Flashcards
@@ -60,7 +67,7 @@ Construí-lo depois significa chegar nele com o esqueleto já provado e com cont
 fact-checking e merge automático para fases seguintes.
 Repo: `github.com/Lucas-Wesley/home-lab-acervo`.
 
-### 3º — Flashcards (+ API) — próximo
+### 3º — Flashcards (+ API) — no ar, sem integrações ainda
 É o **consumidor** da ponta (recebe cards) e já tem repo + plano. Finalizá-lo e dar uma API faz mais
 sentido depois que já existe quem mande cards pra ele — e agora existem: a seleção de texto da
 Biblioteca e os Temas do Acervo. Deve seguir a mesma infraestrutura e o mesmo design system.

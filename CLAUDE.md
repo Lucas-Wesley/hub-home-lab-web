@@ -13,7 +13,7 @@ Aplicações **independentes** (cada uma com banco + API próprios) que se falam
 |-----|------|-------|
 | Acervo | github.com/Lucas-Wesley/home-lab-acervo | Gerenciador de conhecimento (Temas + referências) — **2º, no ar** |
 | Biblioteca Digital | github.com/Lucas-Wesley/biblioteca-digital | Leitor/biblioteca PDF+EPUB (PWA) com anotações — **1º, no ar** |
-| Flashcards | github.com/Lucas-Wesley/flashcards | App estilo Anki — **3º, próximo** |
+| Flashcards | github.com/Lucas-Wesley/flashcards | App estilo Anki (FSRS-6) — **3º, no ar** |
 | Hub | github.com/Lucas-Wesley/hub-home-lab-web | Este repo — interface central (último) |
 
 ## Ambiente (homelab)
@@ -23,7 +23,7 @@ Aplicações **independentes** (cada uma com banco + API próprios) que se falam
 
 ## Sugestões de melhoria dos apps
 Cada app tem **Ajustes → Sugestões de melhoria** (contrato em `docs/ARQUITETURA.md` §4). Quando o Lucas pedir para "ver as sugestões":
-1. Ler as novas: `curl -s --cacert certs/homelab-ca.crt https://192.168.1.20:<porta>/api/sugestoes` (8443 Biblioteca, 8444 Acervo; o `certs/` fica na pasta `homelab`).
+1. Ler as novas: `curl -s --cacert certs/homelab-ca.crt https://192.168.1.20:<porta>/api/sugestoes` (8443 Biblioteca, 8444 Acervo, 8445 Flashcards; o `certs/` fica na pasta `homelab`).
 2. Conferir com ele o que não estiver claro, fazer, testar e publicar.
 3. Marcar cada uma: `PATCH /api/sugestoes/{id}` com `{"estado":"feita","resposta":"<o que mudou>"}` (ou `descartada`, com o motivo).
 
