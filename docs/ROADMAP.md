@@ -12,6 +12,7 @@
 | Biblioteca Digital | **No ar**, em uso | `https://192.168.1.20:8443` |
 | Acervo | **No ar**, primeira versão completa | `https://192.168.1.20:8444` |
 | Flashcards | **No ar**, primeira versão (06/11/2026) | `https://192.168.1.20:8445` |
+| Extensão do Chrome | **Feita** (06/11/2026), instalada sem compactação | — (cliente dos apps) |
 | Hub | Último | — |
 
 **Biblioteca Digital:**
@@ -25,6 +26,7 @@
   de alguns dias de uso.
 - **Busca no texto dos livros** (R32): tela "Buscar nos meus livros", que abre o livro no trecho, e
   API usada pelo Pesquisador do Acervo.
+- **Capítulos e texto de um livro pela API** (R33), para o Acervo resumir capítulos.
 - Detalhes em `biblioteca-digital/docs/DECISOES.md`.
 
 **Acervo:**
@@ -39,6 +41,10 @@
 - **Pesquisador** (D27): um tema vira uma Referência com fonte em cada parte. O Lucas escolhe as
   fontes (seus livros, Wikipédia, YouTube, sites ou só a IA) e a profundidade (rápida ou detalhada,
   com conferência), e pode revisar o esboço antes da busca.
+- **Aprofundar uma pesquisa** (D29): outra rodada com mais fontes e o que o Lucas quer a mais,
+  partindo do texto atual e dos Temas que já tratam do assunto, com a seção "O que há de novo".
+- **Resumir capítulos de um livro** (D30): um ou mais capítulos de um livro da Biblioteca viram
+  um resumo fiel, com a página de cada parte, e a IA sugere o Tema existente ou novo.
 - Ainda não existem a verificação de veracidade das Referências de vídeo nem o envio de trechos da
   Biblioteca para o Acervo (planejado em `home-lab-acervo/docs/PESQUISADOR.md`).
 - Detalhes em `home-lab-acervo/docs/DECISOES.md` e `CONSTRUCAO.md`.
@@ -50,9 +56,15 @@
 - **Gerar baralho com IA** (Claude Code headless, como no Acervo): pedido → proposta → revisão e aprovação; a
   instrução da IA é editável em Ajustes.
 - Imagens nos cartões, da Wikipédia (pela IA ou à mão) ou do aparelho.
-- **Cartões de um link** do site do Mairo Vergara, com o **áudio** da pronúncia (sem IA).
+- **Cartões de um link** do site do Mairo Vergara, com o **áudio** da pronúncia; numa página com
+  muitos exemplos, a IA escolhe só os 3 mais didáticos, sem mudar as frases (F29).
 - Ainda sem estudo offline e sem integração.
 - Detalhes e próximos passos em `flashcards/docs/DECISOES.md`.
+
+**Extensão do Chrome** (`home-lab-plugin-web`):
+- Num vídeo do YouTube, um botão discreto no canto manda o link ao Acervo; numa página do Mairo
+  Vergara com frases de exemplo, manda ao Flashcards. Guarda só o histórico dos envios e os ajustes.
+- É só um cliente das APIs que os apps já têm. Detalhes em `home-lab-plugin-web/docs/DECISOES.md`.
 
 **Comum às três:**
 - Mesma infraestrutura (ver [`ARQUITETURA.md`](ARQUITETURA.md) §4).
@@ -64,7 +76,9 @@
 **Integrações:** a primeira é **Acervo → Biblioteca** (06/11/2026): o Pesquisador do Acervo busca
 no texto dos livros e cita livro e página (ver [`ARQUITETURA.md`](ARQUITETURA.md) §3). É só leitura,
 com o formato da API da Biblioteca. O contrato comum (o Fragmento) continua não definido e nasce na
-primeira troca de conteúdo; o candidato natural é Biblioteca/Acervo → Flashcards.
+primeira troca de conteúdo; o candidato natural é Biblioteca/Acervo → Flashcards. Depois vieram
+**Acervo → Flashcards** (F28) e **Acervo → Biblioteca, capítulos** (R33/D30), também cada uma com
+o formato da API de quem responde.
 
 ## Ordem de desenvolvimento
 

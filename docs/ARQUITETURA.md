@@ -39,6 +39,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 | **Acervo** | Gerenciador de conhecimento (Temas + referências) | github.com/Lucas-Wesley/home-lab-acervo | No ar (`:8444`) |
 | **Biblioteca Digital** | Leitor/biblioteca de PDF e EPUB com anotações | github.com/Lucas-Wesley/biblioteca-digital | No ar (`:8443`) |
 | **Flashcards** | App estilo Anki (Vue + Go + SQLite) | github.com/Lucas-Wesley/flashcards | No ar (`:8445`) |
+| **Extensão do Chrome** | Botão nas páginas que manda o link ao app certo (YouTube → Acervo, Mairo Vergara → Flashcards) | github.com/Lucas-Wesley/home-lab-plugin-web | Feita, instalada sem compactação |
 | **Hub** | Interface central que reúne todos | github.com/Lucas-Wesley/hub-home-lab-web | Último a construir |
 
 ---
@@ -47,9 +48,10 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 
 | De → Para | O que acontece |
 |-----------|----------------|
-| Biblioteca Digital → Acervo | Capítulo/parágrafo vira **texto de referência** ou alimenta um **Tema** |
+| Biblioteca Digital → Acervo | Capítulo/parágrafo vira **texto de referência** ou alimenta um **Tema** (feito no sentido Acervo lê da Biblioteca: D30 / R33) |
 | Biblioteca Digital → Flashcards | **Seleção** de texto vira **flashcard** |
 | Acervo → Flashcards | Tema, capítulo ou Referência vira proposta de **flashcards** (feito: D28 / F28) |
+| Extensão do Chrome → Acervo, Flashcards | Manda o link da página aberta (`POST /api/referencias`, `POST /api/links`) |
 | Hub → todos | Lê as APIs e mostra tudo junto |
 
 Toda integração é uma **chamada de API** que troca um **Fragmento de Conteúdo** — ver
@@ -60,6 +62,10 @@ Toda integração é uma **chamada de API** que troca um **Fragmento de Conteúd
 interna do Docker (`http://biblioteca:8080`), e cita livro e página com o link de volta para o
 ponto do livro. É uma consulta, não uma troca de conteúdo: o formato é o da própria API da
 Biblioteca, e o Fragmento continua para quando um app **mandar** conteúdo para o outro.
+
+O **resumo de capítulos** do Acervo (D30) também só lê: pega o sumário e o texto dos capítulos
+escolhidos (`GET /api/books/{id}/chapters` e `/text`, R33), do mesmo índice da busca. A **extensão
+do Chrome** é um cliente como o Hub será: não tem banco nem API, só chama as APIs que já existem.
 
 ---
 
