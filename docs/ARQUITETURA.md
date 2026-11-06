@@ -55,6 +55,12 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 Toda integração é uma **chamada de API** que troca um **Fragmento de Conteúdo** — ver
 [`CONTRATO.md`](CONTRATO.md).
 
+**A primeira já existe (06/11/2026): Acervo → Biblioteca, só leitura.** O Pesquisador do Acervo
+(D27) chama a busca no texto dos livros da Biblioteca (`GET /api/search?q=`, R32), pela rede
+interna do Docker (`http://biblioteca:8080`), e cita livro e página com o link de volta para o
+ponto do livro. É uma consulta, não uma troca de conteúdo: o formato é o da própria API da
+Biblioteca, e o Fragmento continua para quando um app **mandar** conteúdo para o outro.
+
 ---
 
 ## 4. Convenções do ecossistema (manter simples)

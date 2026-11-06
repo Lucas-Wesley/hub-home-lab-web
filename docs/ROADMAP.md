@@ -23,6 +23,8 @@
 - **Estatísticas de leitura** (06/11/2026): tempo e páginas por dia e por livro, dias seguidos,
   calendário, médias e previsão do tempo que falta. Coletando dados; revisão com o Lucas depois
   de alguns dias de uso.
+- **Busca no texto dos livros** (R32): tela "Buscar nos meus livros", que abre o livro no trecho, e
+  API usada pelo Pesquisador do Acervo.
 - Detalhes em `biblioteca-digital/docs/DECISOES.md`.
 
 **Acervo:**
@@ -34,8 +36,11 @@
   app e leitura offline.
 - **Mais informações sobre um trecho:** seleciono um texto num Tema e a IA pesquisa na internet
   (`WebSearch`/`WebFetch`, só nessa tarefa) e devolve uma explicação com fontes (D26).
-- Ainda não existem a verificação de veracidade, o Pesquisador (conteúdo novo a partir de um tema)
-  nem a integração com a Biblioteca; estão planejados em `home-lab-acervo/docs/PESQUISADOR.md`.
+- **Pesquisador** (D27): um tema vira uma Referência com fonte em cada parte. O Lucas escolhe as
+  fontes (seus livros, Wikipédia, YouTube, sites ou só a IA) e a profundidade (rápida ou detalhada,
+  com conferência), e pode revisar o esboço antes da busca.
+- Ainda não existem a verificação de veracidade das Referências de vídeo nem o envio de trechos da
+  Biblioteca para o Acervo (planejado em `home-lab-acervo/docs/PESQUISADOR.md`).
 - Detalhes em `home-lab-acervo/docs/DECISOES.md` e `CONSTRUCAO.md`.
 
 **Flashcards:**
@@ -56,8 +61,10 @@
   e as próximas apps já nascem com ela.
 - No Acervo, Ajustes também mostra as **instruções da IA** de cada etapa, editáveis pelo celular.
 
-**Integrações:** nenhuma ainda. O contrato comum continua não definido, e vai nascer quando o
-primeiro par de apps precisar conversar. O candidato natural é Biblioteca/Acervo → Flashcards.
+**Integrações:** a primeira é **Acervo → Biblioteca** (06/11/2026): o Pesquisador do Acervo busca
+no texto dos livros e cita livro e página (ver [`ARQUITETURA.md`](ARQUITETURA.md) §3). É só leitura,
+com o formato da API da Biblioteca. O contrato comum (o Fragmento) continua não definido e nasce na
+primeira troca de conteúdo; o candidato natural é Biblioteca/Acervo → Flashcards.
 
 ## Ordem de desenvolvimento
 
