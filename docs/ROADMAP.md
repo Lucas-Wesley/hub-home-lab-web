@@ -20,6 +20,9 @@
 - Progresso no servidor e leitura offline de livros baixados.
 - Busca de livros em fontes abertas.
 - Ajustes de leitura guardados por livro, com o estilo pronto "Acervo" como padrão.
+- **Estatísticas de leitura** (06/11/2026): tempo e páginas por dia e por livro, dias seguidos,
+  calendário, médias e previsão do tempo que falta. Coletando dados; revisão com o Lucas depois
+  de alguns dias de uso.
 - Detalhes em `biblioteca-digital/docs/DECISOES.md`.
 
 **Acervo:**
@@ -29,8 +32,10 @@
 - O Lucas aprova pelo diff, em Revisões.
 - Cada Tema é uma página com capítulos, que podem ser separados em páginas próprias, com edição no
   app e leitura offline.
-- Ainda não existem a verificação de veracidade nem a integração com a Biblioteca, que está só
-  planejada em `home-lab-acervo/docs/PESQUISADOR.md`.
+- **Mais informações sobre um trecho:** seleciono um texto num Tema e a IA pesquisa na internet
+  (`WebSearch`/`WebFetch`, só nessa tarefa) e devolve uma explicação com fontes (D26).
+- Ainda não existem a verificação de veracidade, o Pesquisador (conteúdo novo a partir de um tema)
+  nem a integração com a Biblioteca; estão planejados em `home-lab-acervo/docs/PESQUISADOR.md`.
 - Detalhes em `home-lab-acervo/docs/DECISOES.md` e `CONSTRUCAO.md`.
 
 **Flashcards:**
@@ -40,7 +45,8 @@
 - **Gerar baralho com IA** (Claude Code headless, como no Acervo): pedido → proposta → revisão e aprovação; a
   instrução da IA é editável em Ajustes.
 - Imagens nos cartões, da Wikipédia (pela IA ou à mão) ou do aparelho.
-- Ainda sem áudio, sem estudo offline e sem integração.
+- **Cartões de um link** do site do Mairo Vergara, com o **áudio** da pronúncia (sem IA).
+- Ainda sem estudo offline e sem integração.
 - Detalhes e próximos passos em `flashcards/docs/DECISOES.md`.
 
 **Comum às três:**
