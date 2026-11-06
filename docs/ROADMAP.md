@@ -56,14 +56,16 @@
 - **Gerar baralho com IA** (Claude Code headless, como no Acervo): pedido → proposta → revisão e aprovação; a
   instrução da IA é editável em Ajustes.
 - Imagens nos cartões, da Wikipédia (pela IA ou à mão) ou do aparelho.
-- **Cartões de um link** do site do Mairo Vergara, com o **áudio** da pronúncia; numa página com
-  muitos exemplos, a IA escolhe só os 3 mais didáticos, sem mudar as frases (F29).
+- **Cartões de um link** de qualquer site, com o **áudio** da pronúncia: o app lê as frases de
+  exemplo da página ou, se ela não as mostra do jeito comum, a IA as tira do texto; vão só as 3 mais
+  didáticas (F29, F31). Na revisão, o baralho pode ser trocado (padrão: Inglês).
 - Ainda sem estudo offline e sem integração.
 - Detalhes e próximos passos em `flashcards/docs/DECISOES.md`.
 
 **Extensão do Chrome** (`home-lab-plugin-web`):
-- Num vídeo do YouTube, um botão discreto no canto manda o link ao Acervo; numa página do Mairo
-  Vergara com frases de exemplo, manda ao Flashcards. Guarda só o histórico dos envios e os ajustes.
+- Num vídeo do YouTube, um botão discreto no canto manda o link ao Acervo; numa página com frases
+  de exemplo, de qualquer site, manda ao Flashcards (pelo ícone, qualquer página). Guarda só o
+  histórico dos envios e os ajustes.
 - É só um cliente das APIs que os apps já têm. Detalhes em `home-lab-plugin-web/docs/DECISOES.md`.
 
 **Comum às três:**

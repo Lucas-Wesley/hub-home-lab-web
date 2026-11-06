@@ -39,7 +39,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 | **Acervo** | Gerenciador de conhecimento (Temas + referências) | github.com/Lucas-Wesley/home-lab-acervo | No ar (`:8444`) |
 | **Biblioteca Digital** | Leitor/biblioteca de PDF e EPUB com anotações | github.com/Lucas-Wesley/biblioteca-digital | No ar (`:8443`) |
 | **Flashcards** | App estilo Anki (Vue + Go + SQLite) | github.com/Lucas-Wesley/flashcards | No ar (`:8445`) |
-| **Extensão do Chrome** | Botão nas páginas que manda o link ao app certo (YouTube → Acervo, Mairo Vergara → Flashcards) | github.com/Lucas-Wesley/home-lab-plugin-web | Feita, instalada sem compactação |
+| **Extensão do Chrome** | Botão nas páginas que manda o link ao app certo (vídeo do YouTube → Acervo, página com frases de exemplo → Flashcards) | github.com/Lucas-Wesley/home-lab-plugin-web | Feita, instalada sem compactação |
 | **Hub** | Interface central que reúne todos | github.com/Lucas-Wesley/hub-home-lab-web | Último a construir |
 
 ---
