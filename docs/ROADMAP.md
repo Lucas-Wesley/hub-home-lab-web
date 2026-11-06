@@ -37,7 +37,10 @@
 - Baralhos, notas de frente e verso ou nos dois sentidos (vocabulário), estudo com quatro notas,
   desfazer, busca, suspensão e importação de texto/CSV.
 - Agendamento FSRS-6 (`go-fsrs`), com o dia de estudo virando às 4h em Brasília.
-- Ainda sem mídia (imagem e áudio), sem estudo offline e sem integração.
+- **Gerar baralho com IA** (Claude Code headless, como no Acervo): pedido → proposta → revisão e aprovação; a
+  instrução da IA é editável em Ajustes.
+- Imagens nos cartões, da Wikipédia (pela IA ou à mão) ou do aparelho.
+- Ainda sem áudio, sem estudo offline e sem integração.
 - Detalhes e próximos passos em `flashcards/docs/DECISOES.md`.
 
 **Comum às três:**
