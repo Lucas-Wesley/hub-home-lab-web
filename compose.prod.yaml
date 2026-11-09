@@ -1,0 +1,41 @@
+services:
+  hub:
+    ports: !reset []
+    volumes:
+      - /srv/data/hub:/data
+      # As pastas de todos os apps, só para medir (H2).
+      - /srv/data:/apps:ro
+    environment:
+      APPS_DIR: /apps
+      DOCKER_URL: http://docker-proxy:2375
+      PROXMOX_URL: https://192.168.1.10:8006
+      PROXMOX_NODE: pve
+      # A impressão digital do certificado do Proxmox (README do homelab); vence em 28/10/2028.
+      PROXMOX_FINGERPRINT: BE:AE:94:69:B5:21:47:DC:4E:5E:CE:1C:69:9F:0F:06:82:33:B3:DA:D3:EB:E0:4F:6A:CA:71:02:F7:09:19:32
+    depends_on:
+      - docker-proxy
+    networks:
+      - proxy
+      - docker
+
+  # O Hub não recebe o socket do Docker: este proxy só deixa ler o uso do disco e limpar imagens e
+  # cache de build. Criar, parar e entrar em contêineres fica bloqueado (H4).
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    restart: unless-stopped
+    environment:
+      SYSTEM: 1
+      IMAGES: 1
+      BUILD: 1
+      POST: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker
+
+networks:
+  proxy:
+    external: true
+  # Só o Hub fala com o proxy do Docker; os outros apps ficam na rede proxy, sem acesso a ela.
+  docker:
+    internal: true

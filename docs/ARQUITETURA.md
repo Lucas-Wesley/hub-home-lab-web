@@ -1,7 +1,7 @@
 # Arquitetura do Ecossistema
 
 > Visão de nível alto de como as aplicações pessoais se encaixam. Vale para **todos** os projetos.
-> Atualizado em **06/11/2026**.
+> Atualizado em **09/11/2026**.
 
 ---
 
@@ -40,7 +40,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 | **Biblioteca Digital** | Leitor/biblioteca de PDF e EPUB com anotações | github.com/Lucas-Wesley/biblioteca-digital | No ar (`:8443`) |
 | **Flashcards** | App estilo Anki (Vue + Go + SQLite) | github.com/Lucas-Wesley/flashcards | No ar (`:8445`) |
 | **Extensão do Chrome** | Botão nas páginas que manda o link ao app certo (vídeo do YouTube → Acervo, página com frases de exemplo → Flashcards) | github.com/Lucas-Wesley/home-lab-plugin-web | Feita, instalada sem compactação |
-| **Hub** | Interface central que reúne todos | github.com/Lucas-Wesley/hub-home-lab-web | Último a construir |
+| **Hub** | Interface central que reúne todos; começou pelo painel do servidor | github.com/Lucas-Wesley/hub-home-lab-web | Painel do servidor no ar (`:8449`); conteúdo por último |
 
 ---
 
@@ -86,7 +86,8 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
   offline.
 - **Onde roda:** VM `apps` (`192.168.1.20`) no Proxmox, com **Docker Compose**, um container por
   app e dados em `/srv/data/<app>`.
-- **Proxy:** **Caddy** com `tls internal`, uma porta por app (`:8443` Biblioteca, `:8444` Acervo, `:8445` Flashcards).
+- **Proxy:** **Caddy** com `tls internal`, uma porta por app (`:8443` Biblioteca, `:8444` Acervo, `:8445` Flashcards, `:8446` Streaming,
+  `:8448` Prowlarr, `:8449` Hub).
   - O certificado raiz para instalar nos aparelhos fica em `http://192.168.1.20/ca.crt`.
   - A configuração está na pasta `proxy/` do homelab, copiada para `/opt/proxy`.
 - **Publicar:** `git push` na main e `./deploy.sh` de cada app.

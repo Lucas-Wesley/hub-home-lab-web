@@ -1,6 +1,6 @@
 # Roadmap do Ecossistema
 
-> Ordem sugerida para desenvolver as aplicações. Atualizado em **06/11/2026**.
+> Ordem sugerida para desenvolver as aplicações. Atualizado em **09/11/2026**.
 > Vale para todos os projetos — este é o repo **Hub**, ponto único de referência.
 
 ---
@@ -13,7 +13,7 @@
 | Acervo | **No ar**, primeira versão completa | `https://192.168.1.20:8444` |
 | Flashcards | **No ar**, primeira versão (06/11/2026) | `https://192.168.1.20:8445` |
 | Extensão do Chrome | **Feita** (06/11/2026), instalada sem compactação | — (cliente dos apps) |
-| Hub | Último | — |
+| Hub | **Painel do servidor no ar** (09/11/2026); a parte de conteúdo é a última | `https://192.168.1.20:8449` |
 
 **Biblioteca Digital:**
 - PWA que lê EPUB (Readium) e PDF (PDF.js), com modo texto para PDF.
@@ -109,7 +109,13 @@ Repo: `github.com/Lucas-Wesley/flashcards`.
 **Último sempre.** Só consome as APIs dos outros; construir cedo trava tudo.
 Repo: `github.com/Lucas-Wesley/hub-home-lab-web`.
 
-#### Pedido para o Hub: gestão do servidor e do Claude (anotado em 06/11/2026, não começado)
+#### Pedido para o Hub: gestão do servidor e do Claude (anotado em 06/11/2026, começado em 09/11/2026)
+
+**Feito (09/11/2026):** o painel do servidor, só leitura, com o armazenamento do Proxmox, da VM e
+de cada app, a memória e os contêineres, e a limpeza do Docker com agenda. Ele não depende das APIs
+dos apps, então pôde vir antes da parte de conteúdo. Detalhes e decisões (H1–H7) em
+[`DECISOES.md`](DECISOES.md). Falta, do pedido abaixo: limpar o que é temporário dentro de cada
+app e a parte do Claude.
 
 O Lucas quer gerenciar pelo Hub, num lugar só:
 
@@ -139,10 +145,11 @@ O Lucas quer gerenciar pelo Hub, num lugar só:
   por app que o app inclui no prompt, editável no Ajustes, como já são as instruções. Não seria uma
   sessão longa do Claude.
 
-**Ainda por decidir:** como o Hub lê esses dados. Cada app expondo uma API de "manutenção"
-(espaço, tarefas, limpar)? Um agente no host para os números do servidor (por exemplo,
-`node-exporter`/cAdvisor ou um endpoint simples)? Seguir o princípio de não definir o contrato
-antes de precisar.
+**Como o Hub lê esses dados (decidido em 09/11/2026):** os números do servidor vêm da API do
+Proxmox (token só de leitura), do disco da VM e de um proxy do Docker que só deixa ler e limpar,
+sem agente no host. O tamanho de cada app é medido de fora, em `/srv/data`. Limpar o que é de
+dentro de um app vai pedir uma API de "manutenção" em cada app; o formato nasce quando o primeiro
+app a tiver, seguindo o princípio de não definir o contrato antes de precisar.
 
 ---
 

@@ -5,13 +5,23 @@ Biblioteca Digital, Flashcards) numa só interface — primeiro web, depois mobi
 
 Repositório: `github.com/Lucas-Wesley/hub-home-lab-web`
 
-> **Status:** **sem implementação por enquanto — de propósito.** O Hub é o **último** a ser
-> construído, porque ele só *consome* as APIs dos outros apps (é um cliente, não dono dos dados).
-> Construí-lo cedo demais trava tudo.
+> **Status (09/11/2026):** no ar o **painel do servidor** (`https://192.168.1.20:8449`):
+> armazenamento do Proxmox, da VM e de cada app, memória e contêineres, e a limpeza do Docker com
+> agenda. A parte de conteúdo (juntar Acervo, Biblioteca e Flashcards) continua para o fim, porque
+> depende das APIs dos outros apps. Estado e decisões em [`docs/DECISOES.md`](docs/DECISOES.md).
 
-## Por que este repositório existe agora
+## Rodar e publicar
 
-Além de ser o futuro app central, o Hub é o **ponto único de referência** do ecossistema. Os
+- **Local:** `make dev-api` (API em `:8080`, lendo `data/apps` como se fosse `/srv/data`) e
+  `make dev-web` (Vite).
+- **Testes:** `make test` (Go, Vitest e Playwright com um Docker falso).
+- **Publicar:** `git push origin main` e `./deploy.sh`.
+- **Proxmox:** sem `/opt/apps/hub.env` com o `PROXMOX_TOKEN`, o painel abre sem os números do
+  Proxmox e mostra como criar o token (ver `docs/DECISOES.md`, H3).
+
+## Por que este repositório existe
+
+Além de ser o app central, o Hub é o **ponto único de referência** do ecossistema. Os
 documentos que valem para **todos** os apps vivem aqui:
 
 - [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) — como as aplicações se encaixam e se comunicam.
@@ -20,8 +30,9 @@ documentos que valem para **todos** os apps vivem aqui:
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — a **ordem de desenvolvimento** das aplicações e os
   princípios que valem pra todas.
 
-## O que o Hub será (quando chegar a hora)
+## O que o Hub será
 
-Uma interface que lista e cruza o conteúdo dos apps: o Acervo (Temas, textos principais,
-referências), a Biblioteca Digital (livros, anotações) e os baralhos do Flashcards — consumindo
-as APIs de cada um. Não terá banco próprio de conteúdo; no máximo, estado de UI.
+Além do painel do servidor, uma interface que lista e cruza o conteúdo dos apps: o Acervo (Temas,
+textos principais, referências), a Biblioteca Digital (livros, anotações) e os baralhos do
+Flashcards, consumindo as APIs de cada um. Não terá banco próprio de conteúdo: o banco dele guarda
+só a agenda e o histórico da limpeza e as sugestões.
