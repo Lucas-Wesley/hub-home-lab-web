@@ -82,7 +82,7 @@ onBeforeUnmount(() => {
     <main class="conteudo">
       <Servidor v-if="rota.nome === 'servidor'" />
       <Limpeza v-else-if="rota.nome === 'limpeza'" />
-      <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" />
+      <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" :secao="rota.param" />
       <Armazenamento v-else />
     </main>
 

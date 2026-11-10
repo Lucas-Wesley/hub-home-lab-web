@@ -85,6 +85,7 @@ test('servidor mostra a VM, a memória de cada app, os contêineres e como ligar
 test('anota uma sugestão em Ajustes', async ({ page }) => {
   await page.goto('/#/servidor')
   await page.getByRole('button', { name: 'Ajustes' }).click()
+  await page.getByRole('link', { name: /Sugestões de melhoria/ }).click()
   await page.getByLabel('Sugestão de melhoria').fill('Mostrar a temperatura do processador')
   await page.getByRole('button', { name: 'Enviar sugestão' }).click()
   await expect(page.getByText('Mostrar a temperatura do processador')).toBeVisible()

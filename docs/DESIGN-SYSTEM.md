@@ -3,7 +3,8 @@
 Vale para a Biblioteca Digital, o Acervo, o Flashcards, o Streaming, o Hub e as próximas apps.
 Há uma cópia igual em `docs/DESIGN-SYSTEM.md` de cada app; os tokens ficam no começo do
 `frontend/src/style.css` de cada uma, com os mesmos nomes e valores, menos a cor do app (`--marca`).
-Definido pelo Lucas em 06/11/2026 e revisto em 09/11/2026 (segunda versão, abaixo).
+Definido pelo Lucas em 06/11/2026 e revisto em 09/11/2026 (segunda versão, abaixo) e em 10/11/2026
+(hierarquia dos títulos e Ajustes em níveis).
 
 A extensão do Chrome ainda usa a paleta da primeira versão (creme, Literata e terracota) no
 `popup.css` e no botão; passa para esta quando for mexida.
@@ -73,10 +74,19 @@ cor do app.
   lista, nome do app e títulos de página também ficam nela.
 - **Leitura:** Literata, só no texto que se lê de verdade: o leitor do Acervo, os livros da
   Biblioteca, trechos de resultado de busca e o verso dos cartões.
-- **Escala:** títulos de página com 28 px, peso 700 e espaçamento −0,022em. Na lista, título com
-  17 px e peso 650, resumo com 14,5 px em `--texto-suave` e metadados com 12 px.
-- **Rótulos de grupo:** 13 px, peso 600, em `--texto-suave`, em caixa normal (nunca em
-  maiúsculas).
+- **Hierarquia** (revista em 10/11/2026): **um título é sempre maior que o que vem abaixo dele.**
+
+  | Nível | Tamanho e peso | Cor | Classe | Uso |
+  |---|---|---|---|---|
+  | Título da página | 28 px, 700, −0,022em | `--texto` | `.pagina h1` | Um por tela |
+  | Título de seção | 20 px, 650, −0,012em | `--texto` | `.rotulo` | O que agrupa uma lista ou um bloco ("Continuar assistindo", "Contêineres") |
+  | Título de item | 17 px, 650 | `--texto` | — | A linha de uma lista |
+  | Descrição | 14,5 px, 400 | `--texto-suave` | `.descricao`, `.descricao-da-pagina` | O resumo do item ou da página |
+  | Metadado | 12 px | `--texto-fraco` | — | Data, versão, contagens pequenas |
+  | Rótulo de campo ou de número | 13 px, 600 | `--texto-suave` | `.rotulo-campo`, `.rotulo-numero` | Em cima de um campo de formulário ou de um número grande, nunca de uma lista |
+
+  O erro que isso corrige: um título de seção pequeno e cinza (13 px) em cima de itens maiores
+  (17 px) fazia a seção parecer menos importante que o que ela contém.
 - **Leitura:** 17,5 px com entrelinha 1,72, coluna de no máximo 720 px.
 
 ## Forma e espaço
@@ -106,9 +116,15 @@ cor do app.
   bloco em `--superficie` com raio de 18 px e rótulo na cor do app. Um por tela, no máximo.
 - **Aviso rápido:** pílula de vidro no pé da tela, que some em 4 s.
 - **Folha de ações:** sobe do pé da tela, com raio de 18 px e véu com blur leve.
-- **Ajustes:** último item do menu, discreto. Toda app tem nele a seção **Sugestões de melhoria**
+- **Ajustes:** último item do menu, discreto. **Em níveis** (10/11/2026): a primeira tela só tem o
+  título "Ajustes" e a lista das seções (`.lista-de-ajustes`: nome em 17 px, descrição de uma linha
+  e uma seta); cada seção abre numa página própria (`#/ajustes/<seção>`) com "‹ Ajustes" para
+  voltar, o nome da seção como título e uma descrição (`.descricao-da-pagina`). Nada de listar o
+  conteúdo de todas as seções numa tela só. Uma lista dentro de uma seção (as instruções da IA)
+  segue o mesmo padrão, e o item abre a sua página. Toda app tem a seção **Sugestões de melhoria**
   (campo de texto, botão "Enviar sugestão" e a lista com estado e a resposta do Claude), sobre a
-  API comum `/api/sugestoes` (ver ARQUITETURA do Hub).
+  API comum `/api/sugestoes` (ver ARQUITETURA do Hub); as que usam IA têm também **Instruções da
+  IA**.
 - **Barra de seleção:** pílula escura (`--destaque`) com ícones de 20 px, que aparece ao
   selecionar texto; no celular fica abaixo da seleção, porque em cima vem o menu do sistema.
 - **Trecho com explicação:** sublinhado como link (pontilhado e cinza enquanto a IA trabalha); o
