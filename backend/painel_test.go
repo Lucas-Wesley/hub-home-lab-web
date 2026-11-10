@@ -76,7 +76,7 @@ func TestServidorLeVMEProxmox(t *testing.T) {
 	if r.VM == nil || r.VM.Memoria.Total != 8000000*1024 || r.VM.Memoria.Usado != 1500000*1024 || r.VM.Carga[1] != 0.20 || r.VM.LigadaHa != 18000 {
 		t.Fatalf("vm: %+v %s", r.VM, r.VMErro)
 	}
-	if len(r.Containers) != 2 || r.Containers[0].Nome != "caddy" {
+	if len(r.Containers) != 3 || r.Containers[0].Nome != "caddy" || r.Containers[1].Projeto != "flashcards" {
 		t.Fatalf("containers: %+v", r.Containers)
 	}
 	p := r.Proxmox
@@ -95,6 +95,50 @@ func TestServidorLeVMEProxmox(t *testing.T) {
 	// Sem permissão para os discos, vem um aviso e o resto.
 	if len(p.Discos) != 0 || len(p.Avisos) != 1 || !strings.Contains(p.Avisos[0], "403") {
 		t.Fatalf("avisos: %+v", p.Avisos)
+	}
+}
+
+func TestServidorMostraAMemoriaDeCadaApp(t *testing.T) {
+	e := novoAmbiente(t)
+	var r respostaServidor
+	e.pedir("GET", "/api/servidor", nil, &r)
+	// O cache de arquivos inativo não conta, como no "docker stats"; o contêiner parado não aparece.
+	m := r.MemoriaPorApp
+	if r.MemoriaErro != "" || len(m) != 2 {
+		t.Fatalf("memória por app: %+v %s", m, r.MemoriaErro)
+	}
+	if m[0].Nome != "proxy" || m[0].Titulo != "Caddy (proxy)" || m[0].Memoria != 41943040 || m[0].Containers[0] != "caddy" {
+		t.Fatalf("caddy: %+v", m[0])
+	}
+	if m[1].Titulo != "Flashcards" || m[1].Memoria != 20971520 {
+		t.Fatalf("flashcards: %+v", m[1])
+	}
+
+	// Sem CGROUP_DIR, o resto vem igual.
+	e.app.cfg.cgroup = ""
+	r = respostaServidor{}
+	e.pedir("GET", "/api/servidor", nil, &r)
+	if len(r.MemoriaPorApp) != 0 || !strings.Contains(r.MemoriaErro, "CGROUP_DIR") || len(r.Containers) != 3 {
+		t.Fatalf("sem cgroup: %+v", r)
+	}
+}
+
+func TestPorAppSomaOsConteineresEOProcessador(t *testing.T) {
+	containers := []container{
+		{id: "a", Nome: "streaming-streaming-1", Projeto: "streaming"},
+		{id: "b", Nome: "streaming-procurador-1", Projeto: "streaming"},
+		{id: "c", Nome: "solto"},
+	}
+	antes := map[string]consumo{"a": {cpuUsec: 0}, "b": {cpuUsec: 1000}, "c": {cpuUsec: 0}}
+	depois := map[string]consumo{"a": {memoria: 100, cpuUsec: 1_000_000}, "b": {memoria: 50, cpuUsec: 1_001_000}, "c": {memoria: 300}}
+	// Em 2 segundos e 4 CPUs há 8 s de processador: os dois contêineres do Streaming gastaram 2 s.
+	apps := porApp(containers, antes, depois, 2, 4)
+	if len(apps) != 2 || apps[0].Titulo != "solto" || apps[0].CPU != 0 {
+		t.Fatalf("sem projeto, o contêiner vira um app com o nome dele: %+v", apps)
+	}
+	s := apps[1]
+	if s.Titulo != "Streaming" || s.Memoria != 150 || s.CPU != 0.25 || strings.Join(s.Containers, ",") != "streaming-procurador-1,streaming-streaming-1" {
+		t.Fatalf("streaming: %+v", s)
 	}
 }
 

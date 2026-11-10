@@ -3,7 +3,7 @@
 Estado atual, decisões e próximos passos do Hub. As decisões que valem para todos os apps ficam em
 [`ARQUITETURA.md`](ARQUITETURA.md) e [`ROADMAP.md`](ROADMAP.md).
 
-## Estado (09/11/2026)
+## Estado (10/11/2026)
 
 O Hub começou pelo **painel do servidor**, no ar em `https://192.168.1.20:8449`. Nesta primeira
 versão ele só lê, com uma exceção: a limpeza do Docker.
@@ -17,6 +17,8 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
 - **Servidor:**
   - o processador e a memória do Proxmox, e as VMs e contêineres LXC dele;
   - a memória e a carga da VM `apps`;
+  - a memória e o processador de cada app (somando os contêineres dele) e o que sobra para o
+    sistema;
   - os contêineres Docker.
 - **Limpeza:** apaga o cache de build e as imagens soltas do Docker, agora ou por agenda (a cada
   1, 2, 3, 7, 14 ou 30 dias, numa hora escolhida), e guarda o histórico.
@@ -129,6 +131,22 @@ apps.
 Acervo, o violeta do Flashcards, o âmbar do Streaming nem com o vermelho de erro. As barras do
 disco usam as quatro primeiras cores da paleta categórica do skill de visualização, validadas nos
 dois temas. O texto fica sempre nas cores de texto, e a legenda tem o valor de cada parte.
+
+### H8. Memória de cada app pelo cgroup, não pelo proxy do Docker (10/11/2026)
+
+O "docker stats" sai de `/containers/{id}/stats`, mas liberar `/containers` no proxy também
+liberaria `/containers/{id}/json`, que mostra as variáveis de ambiente de cada app (as chaves).
+Por isso o Hub lê o cgroup v2 da VM, montado só para leitura em `/host/cgroup` (`CGROUP_DIR`).
+
+- **Memória:** `memory.current` menos o `inactive_file` do `memory.stat` de cada
+  `system.slice/docker-<id>.scope`, a mesma conta do "docker stats".
+- **Processador:** o `usage_usec` do `cpu.stat`, lido duas vezes com 1 s de intervalo (as
+  leituras do Docker e do Proxmox ficam no meio, para a tela não esperar à toa). É a fração do
+  processador da VM inteira.
+- **Por app:** os contêineres se juntam pelo projeto do Compose (o rótulo
+  `com.docker.compose.project`, que vem no `/system/df`): o Streaming soma o app e o procurador.
+- **O resto:** a tela mostra a diferença entre o "em uso" da VM e a soma dos apps como "Sistema e
+  o resto" (o Linux, o Docker, o que roda fora dos contêineres).
 
 ## Próximos passos
 

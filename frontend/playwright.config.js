@@ -34,6 +34,7 @@ export default defineConfig({
             DATA_DIR: path.join(dados, 'hub'),
             APPS_DIR: path.join(dados, 'apps'),
             PROC_DIR: path.join(testdata, 'proc'),
+            CGROUP_DIR: path.join(testdata, 'cgroup'),
             DOCKER_URL: 'http://127.0.0.1:8097',
             ADDR: ':8096',
           },

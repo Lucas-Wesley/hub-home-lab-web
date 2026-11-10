@@ -57,6 +57,12 @@ func novoAmbiente(t *testing.T) *ambiente {
 	os.WriteFile(filepath.Join(proc, "loadavg"), []byte("0.15 0.20 0.10 1/300 1234\n"), 0o644)
 	os.WriteFile(filepath.Join(proc, "uptime"), []byte("18000.50 70000.00\n"), 0o644)
 
+	// O cgroup de dois contêineres: o caddy (40 MiB, 8 MiB de cache inativo) e o Flashcards.
+	cgroup := t.TempDir()
+	cgroupDe(t, cgroup, "c1", 50331648, 8388608, 1000000)
+	cgroupDe(t, cgroup, "f1", 20971520, 0, 500000)
+	os.MkdirAll(filepath.Join(cgroup, "system.slice", "containerd.service"), 0o755)
+
 	e.docker = novoDockerFalso()
 	dockerSrv := httptest.NewServer(e.docker)
 	t.Cleanup(dockerSrv.Close)
@@ -68,6 +74,7 @@ func novoAmbiente(t *testing.T) *ambiente {
 		apps:   e.apps,
 		proc:   proc,
 		docker: dockerSrv.URL,
+		cgroup: cgroup,
 		proxmox: configProxmox{
 			url: e.proxmox.URL, no: "pve", token: tokenDeTeste, impressao: impressaoDe(e.proxmox),
 		},
@@ -76,6 +83,7 @@ func novoAmbiente(t *testing.T) *ambiente {
 	if err != nil {
 		t.Fatal(err)
 	}
+	a.amostra = 0
 	e.app = a
 	web := fstest.MapFS{"index.html": {Data: []byte(`<div id="app"></div>`)}}
 	e.srv = httptest.NewServer(newServer(a, web, "teste"))
@@ -91,6 +99,18 @@ func escrever(t *testing.T, caminho string, tamanho int) {
 	if err := os.WriteFile(caminho, bytes.Repeat([]byte("x"), tamanho), 0o644); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// cgroupDe escreve os três arquivos que o painel lê do cgroup de um contêiner.
+func cgroupDe(t *testing.T, dir, id string, memoria, inativo, cpuUsec int64) {
+	t.Helper()
+	pasta := filepath.Join(dir, "system.slice", "docker-"+id+".scope")
+	if err := os.MkdirAll(pasta, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	os.WriteFile(filepath.Join(pasta, "memory.current"), []byte(fmt.Sprintln(memoria)), 0o444)
+	os.WriteFile(filepath.Join(pasta, "memory.stat"), []byte(fmt.Sprintf("anon 1000\nfile 2000\ninactive_file %d\nactive_file 0\n", inativo)), 0o444)
+	os.WriteFile(filepath.Join(pasta, "cpu.stat"), []byte(fmt.Sprintf("usage_usec %d\nuser_usec 0\nsystem_usec 0\n", cpuUsec)), 0o444)
 }
 
 // impressaoDe: o SHA-256 do certificado do servidor de teste, no formato que o Proxmox mostra.
@@ -132,8 +152,9 @@ func (d *dockerFalso) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				{"RepoTags": [], "Size": 99770000, "SharedSize": -1, "Containers": 0}
 			],
 			"Containers": [
-				{"Names": ["/caddy"], "Image": "caddy:2-alpine", "State": "running", "Status": "Up 5 hours", "SizeRw": 4096},
-				{"Names": ["/flashcards-flashcards-1"], "Image": "flashcards:abc", "State": "running", "Status": "Up 2 days", "SizeRw": 0}
+				{"Id": "c1", "Labels": {"com.docker.compose.project": "proxy"}, "Names": ["/caddy"], "Image": "caddy:2-alpine", "State": "running", "Status": "Up 5 hours", "SizeRw": 4096},
+				{"Id": "f1", "Labels": {"com.docker.compose.project": "flashcards"}, "Names": ["/flashcards-flashcards-1"], "Image": "flashcards:abc", "State": "running", "Status": "Up 2 days", "SizeRw": 0},
+				{"Id": "x1", "Labels": {}, "Names": ["/parado"], "Image": "alpine", "State": "exited", "Status": "Exited (0) 3 days ago", "SizeRw": 0}
 			],
 			"BuildCache": [
 				{"Size": %d, "InUse": false, "Shared": false},

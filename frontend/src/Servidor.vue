@@ -17,6 +17,19 @@ onMounted(async () => {
 })
 
 const no = computed(() => dados.value?.proxmox?.no)
+
+// Memória por app, do maior para o menor, e o que sobra do "em uso" da VM: o sistema, o Docker
+// e o que roda fora dos contêineres. As barras são relativas ao maior, para comparar os apps.
+const memoria = computed(() => {
+  const apps = dados.value?.memoria_por_app || []
+  if (!apps.length) return null
+  const soma = apps.reduce((t, m) => t + m.memoria, 0)
+  const resto = dados.value.vm ? Math.max(0, dados.value.vm.memoria.usado - soma) : 0
+  const maior = Math.max(resto, ...apps.map((m) => m.memoria))
+  return { apps, soma, resto, maior }
+})
+
+const processador = (fracao) => `${(fracao * 100).toLocaleString('pt-BR', { maximumFractionDigits: fracao < 0.1 ? 1 : 0 })}%`
 const NOMES_DO_TIPO = { qemu: 'VM', lxc: 'Contêiner LXC' }
 const NOMES_DO_ESTADO = { running: 'Ligada', stopped: 'Desligada', paused: 'Pausada' }
 </script>
@@ -90,6 +103,38 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
         </div>
       </div>
       <div v-else class="aviso erro">{{ dados.vm_erro }}</div>
+
+      <p class="rotulo">Memória por app</p>
+      <template v-if="memoria">
+        <p v-if="dados.vm" class="suave pequeno">
+          Os apps usam {{ bytes(memoria.soma) }} dos {{ bytes(dados.vm.memoria.usado) }} em uso na VM. O processador é a média do último segundo.
+        </p>
+        <ul class="lista">
+          <li v-for="m in memoria.apps" :key="m.nome" class="consumo">
+            <div class="topo">
+              <span class="esquerda">
+                <span class="titulo">{{ m.titulo }}</span>
+                <span v-if="m.containers.length > 1" class="suave pequeno">{{ m.containers.length }} contêineres</span>
+              </span>
+              <span class="valor">{{ bytes(m.memoria) }} · {{ processador(m.cpu) }} do processador</span>
+            </div>
+            <div class="trilha" :title="dados.vm ? `${porcento(m.memoria, dados.vm.memoria.total)}% da memória da VM` : ''">
+              <div class="preenchido" :style="{ width: `${(m.memoria / memoria.maior) * 100}%` }" />
+            </div>
+            <p class="suave pequeno conteineres">{{ m.containers.join(', ') }}</p>
+          </li>
+          <li v-if="memoria.resto" class="consumo">
+            <div class="topo">
+              <span class="titulo">Sistema e o resto</span>
+              <span class="valor">{{ bytes(memoria.resto) }}</span>
+            </div>
+            <div class="trilha resto"><div class="preenchido" :style="{ width: `${(memoria.resto / memoria.maior) * 100}%` }" /></div>
+            <p class="suave pequeno conteineres">O Linux, o Docker e o que roda fora dos contêineres.</p>
+          </li>
+        </ul>
+      </template>
+      <div v-else-if="dados.memoria_erro" class="aviso">{{ dados.memoria_erro }}</div>
+      <div v-else-if="dados.docker_erro" class="aviso erro">{{ dados.docker_erro }}</div>
 
       <p class="rotulo">Contêineres</p>
       <ul v-if="dados.containers.length" class="lista">
@@ -167,6 +212,41 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
 
 .aviso {
   margin-top: 10px;
+}
+
+.consumo {
+  padding: 12px 0;
+}
+
+.consumo .topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 8px;
+}
+
+.trilha {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--azul-fundo);
+  overflow: hidden;
+}
+
+.preenchido {
+  height: 100%;
+  min-width: 4px;
+  border-radius: 999px;
+  background: var(--azul);
+}
+
+.trilha.resto .preenchido {
+  background: var(--texto-suave);
+}
+
+.conteineres {
+  margin: 6px 0 0;
 }
 
 .instrucoes p {

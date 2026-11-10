@@ -113,7 +113,7 @@ Repo: `github.com/Lucas-Wesley/hub-home-lab-web`.
 
 **Feito (09/11/2026):** o painel do servidor, só leitura, com o armazenamento do Proxmox, da VM e
 de cada app, a memória e os contêineres, e a limpeza do Docker com agenda. Ele não depende das APIs
-dos apps, então pôde vir antes da parte de conteúdo. Detalhes e decisões (H1–H7) em
+dos apps, então pôde vir antes da parte de conteúdo. Detalhes e decisões (H1–H8) em
 [`DECISOES.md`](DECISOES.md). Falta, do pedido abaixo: limpar o que é temporário dentro de cada
 app e a parte do Claude.
 

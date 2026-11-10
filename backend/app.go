@@ -11,6 +11,7 @@ type config struct {
 	apps    string // pasta com os dados de cada app (/srv/data na VM, montada só para leitura)
 	proc    string // /proc da VM: memória, carga e tempo ligada
 	docker  string // endereço do proxy do Docker; vazio = painel sem Docker
+	cgroup  string // cgroup v2 da VM: memória e processador de cada contêiner; vazio = sem
 	proxmox configProxmox
 }
 
@@ -26,6 +27,7 @@ func configDoAmbiente() config {
 		apps:   env("APPS_DIR", "./data/apps"),
 		proc:   env("PROC_DIR", "/proc"),
 		docker: os.Getenv("DOCKER_URL"),
+		cgroup: os.Getenv("CGROUP_DIR"),
 		proxmox: configProxmox{
 			url:       env("PROXMOX_URL", "https://192.168.1.10:8006"),
 			no:        env("PROXMOX_NODE", "pve"),
@@ -44,12 +46,13 @@ type app struct {
 	docker  *clienteDocker  // nil sem DOCKER_URL
 	proxmox *clienteProxmox // nil sem PROXMOX_TOKEN
 	medidas *cacheDeMedidas
+	amostra time.Duration // intervalo mínimo entre as duas leituras do processador
 
 	limpando sync.Mutex // uma limpeza por vez, da agenda ou do botão
 }
 
 func novoApp(db *sql.DB, fuso *time.Location, relogio func() time.Time, cfg config) (*app, error) {
-	a := &app{db: db, fuso: fuso, relogio: relogio, cfg: cfg, medidas: &cacheDeMedidas{}}
+	a := &app{db: db, fuso: fuso, relogio: relogio, cfg: cfg, medidas: &cacheDeMedidas{}, amostra: time.Second}
 	if cfg.docker != "" {
 		a.docker = novoDocker(cfg.docker)
 	}

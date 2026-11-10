@@ -64,13 +64,22 @@ test('agenda a limpeza a cada 2 dias às 3h', async ({ page }) => {
   await expect(page.getByText('Próxima limpeza')).toHaveCount(0)
 })
 
-test('servidor mostra a VM, os contêineres e como ligar o Proxmox', async ({ page }) => {
+test('servidor mostra a VM, a memória de cada app, os contêineres e como ligar o Proxmox', async ({ page }) => {
   await page.goto('/#/servidor')
   await expect(page.getByRole('heading', { name: 'Servidor' })).toBeVisible()
   await expect(page.getByText('pveum acl modify / --users hub@pve --roles PVEAuditor')).toBeVisible()
   await expect(page.getByRole('meter', { name: 'Memória' })).toHaveAttribute('aria-valuenow', '19')
-  await expect(page.getByText('acervo-acervo-1')).toBeVisible()
   await expect(page.getByText('Up 5 hours')).toBeVisible()
+
+  // Do maior para o menor; o cache de arquivos inativo não conta. O resto do "em uso" é o sistema.
+  const apps = page.locator('.consumo')
+  await expect(apps.first()).toContainText('Whisper (transcrição)')
+  await expect(apps.first()).toContainText('1 GiB')
+  await expect(apps.nth(1)).toContainText('Acervo')
+  await expect(apps.nth(1)).toContainText('144 MiB')
+  await expect(apps.nth(2)).toContainText('Caddy (proxy)')
+  await expect(apps.last()).toContainText('Sistema e o resto')
+  await expect(page.getByText(/Os apps usam 1,2 GiB dos/)).toBeVisible()
 })
 
 test('anota uma sugestão em Ajustes', async ({ page }) => {

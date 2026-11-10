@@ -88,6 +88,8 @@ type respostaServidor struct {
 	VMErro          string          `json:"vm_erro,omitempty"`
 	Containers      []container     `json:"containers"`
 	DockerErro      string          `json:"docker_erro,omitempty"`
+	MemoriaPorApp   []memoriaDoApp  `json:"memoria_por_app"`
+	MemoriaErro     string          `json:"memoria_erro,omitempty"`
 	Proxmox         *visaoDoProxmox `json:"proxmox"`
 	ProxmoxErro     string          `json:"proxmox_erro,omitempty"`
 	ProxmoxLigado   bool            `json:"proxmox_ligado"` // há um token configurado
@@ -103,21 +105,34 @@ func (a *app) handleServidor(w http.ResponseWriter, r *http.Request) {
 		resp.VM = &v
 	}
 
-	if a.docker == nil {
-		resp.DockerErro = "O Docker não está ligado ao painel (falta DOCKER_URL)."
-	} else if d, err := a.docker.uso(r.Context()); err != nil {
-		resp.DockerErro = "O Docker não respondeu: " + err.Error()
-	} else {
-		resp.Containers = d.Containers
+	// O Docker e o Proxmox são lidos entre as duas leituras dos cgroups (o uso do processador).
+	ler := func() {
+		if a.docker == nil {
+			resp.DockerErro = "O Docker não está ligado ao painel (falta DOCKER_URL)."
+		} else if d, err := a.docker.uso(r.Context()); err != nil {
+			resp.DockerErro = "O Docker não respondeu: " + err.Error()
+		} else {
+			resp.Containers = d.Containers
+		}
+
+		if a.proxmox != nil {
+			p, err := a.proxmox.visao(r.Context())
+			if err != nil {
+				resp.ProxmoxErro = "O Proxmox não respondeu: " + err.Error()
+			} else {
+				resp.Proxmox = &p
+			}
+		}
 	}
 
-	if a.proxmox != nil {
-		p, err := a.proxmox.visao(r.Context())
-		if err != nil {
-			resp.ProxmoxErro = "O Proxmox não respondeu: " + err.Error()
-		} else {
-			resp.Proxmox = &p
-		}
+	resp.MemoriaPorApp = []memoriaDoApp{}
+	if a.cfg.cgroup == "" {
+		ler()
+		resp.MemoriaErro = "A memória de cada app não está ligada ao painel (falta CGROUP_DIR)."
+	} else if antes, depois, segundos, err := amostrar(r.Context(), a.cfg.cgroup, a.amostra, ler); err != nil {
+		resp.MemoriaErro = "Não deu para ler a memória de cada app: " + err.Error()
+	} else if resp.DockerErro == "" {
+		resp.MemoriaPorApp = porApp(resp.Containers, antes, depois, segundos, runtime.NumCPU())
 	}
 	writeJSON(w, http.StatusOK, resp)
 }

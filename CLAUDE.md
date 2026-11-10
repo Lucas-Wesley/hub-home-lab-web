@@ -4,7 +4,7 @@ Este repositório é o **ponto único de referência** do ecossistema. **Leia pr
 - [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) — como os apps se encaixam e se comunicam.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — ordem de desenvolvimento + princípios.
 - [`docs/CONTRATO.md`](docs/CONTRATO.md) — contrato comum (ainda **NÃO definido** de propósito; só está registrado que vai existir e será obrigatório).
-- [`docs/DECISOES.md`](docs/DECISOES.md) — o app Hub em si: o painel do servidor (H1–H7), estado e próximos passos.
+- [`docs/DECISOES.md`](docs/DECISOES.md) — o app Hub em si: o painel do servidor (H1–H8), estado e próximos passos.
 
 ## O ecossistema em uma frase
 Aplicações **independentes** (cada uma com banco + API próprios) que se falam **por API**; o **Hub é só um cliente** que junta tudo e é **construído por último**.
@@ -32,5 +32,5 @@ Cada app tem **Ajustes → Sugestões de melhoria** (contrato em `docs/ARQUITETU
 ## Regras e convenções
 - **Conteúdo do Acervo NÃO sobe pro GitHub** (versionado localmente no homelab). Código das apps pode.
 - Construir **cada app sozinho primeiro**; só criar endpoint de integração quando **os dois lados existirem**; **não definir o contrato comum ainda**.
-- **Painel do servidor:** só lê, menos a limpeza do Docker. O Hub nunca recebe o socket do Docker (só o `docker-proxy`, H4) e lê o Proxmox com um token `PVEAuditor` (H3); o token fica em `/opt/apps/hub.env`, nunca no Git.
+- **Painel do servidor:** só lê, menos a limpeza do Docker. O Hub nunca recebe o socket do Docker (só o `docker-proxy`, H4) lê a memória de cada app pelo cgroup, só para leitura (H8), e lê o Proxmox com um token `PVEAuditor` (H3); o token fica em `/opt/apps/hub.env`, nunca no Git.
 - **Commits:** autoria do Lucas; **sem linha `Co-Authored-By`**.

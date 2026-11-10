@@ -22,8 +22,12 @@ class Docker(BaseHTTPRequestHandler):
                 "LayersSize": 1_946_260_943,
                 "Images": [{"RepoTags": ["acervo:abc"], "Size": 902_410_231, "SharedSize": 0, "Containers": 1}],
                 "Containers": [
-                    {"Names": ["/caddy"], "Image": "caddy:2-alpine", "State": "running", "Status": "Up 5 hours", "SizeRw": 4096},
-                    {"Names": ["/acervo-acervo-1"], "Image": "acervo:abc", "State": "running", "Status": "Up 2 days", "SizeRw": 0},
+                    {"Id": "caddy", "Labels": {"com.docker.compose.project": "proxy"}, "Names": ["/caddy"], "Image": "caddy:2-alpine",
+                     "State": "running", "Status": "Up 5 hours", "SizeRw": 4096},
+                    {"Id": "acervo", "Labels": {"com.docker.compose.project": "acervo"}, "Names": ["/acervo-acervo-1"], "Image": "acervo:abc",
+                     "State": "running", "Status": "Up 2 days", "SizeRw": 0},
+                    {"Id": "whisper", "Labels": {"com.docker.compose.project": "whisper"}, "Names": ["/whisper"], "Image": "whisper:abc",
+                     "State": "running", "Status": "Up 1 hour", "SizeRw": 0},
                 ],
                 "BuildCache": [{"Size": estado["cache"], "InUse": False, "Shared": False}],
             })

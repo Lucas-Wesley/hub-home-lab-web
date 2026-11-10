@@ -5,8 +5,11 @@ services:
       - /srv/data/hub:/data
       # As pastas de todos os apps, só para medir (H2).
       - /srv/data:/apps:ro
+      # O cgroup da VM, só para ler a memória e o processador de cada contêiner (H8).
+      - /sys/fs/cgroup:/host/cgroup:ro
     environment:
       APPS_DIR: /apps
+      CGROUP_DIR: /host/cgroup
       DOCKER_URL: http://docker-proxy:2375
       PROXMOX_URL: https://192.168.1.10:8006
       PROXMOX_NODE: pve

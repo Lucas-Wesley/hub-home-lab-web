@@ -33,11 +33,13 @@ type usoDoDocker struct {
 }
 
 type container struct {
-	Nome   string `json:"nome"`
-	Imagem string `json:"imagem"`
-	Estado string `json:"estado"` // running, exited…
-	Status string `json:"status"` // "Up 5 hours", como o Docker escreve
-	Bytes  int64  `json:"bytes"`  // o que o contêiner gravou fora da imagem
+	id      string
+	Nome    string `json:"nome"`
+	Projeto string `json:"projeto"` // o projeto do Compose: o app a que o contêiner pertence
+	Imagem  string `json:"imagem"`
+	Estado  string `json:"estado"` // running, exited…
+	Status  string `json:"status"` // "Up 5 hours", como o Docker escreve
+	Bytes   int64  `json:"bytes"`  // o que o contêiner gravou fora da imagem
 }
 
 // Os campos de GET /system/df que o painel usa.
@@ -50,6 +52,8 @@ type dfDoDocker struct {
 		Containers int
 	}
 	Containers []struct {
+		Id     string
+		Labels map[string]string
 		Names  []string
 		Image  string
 		State  string
@@ -95,7 +99,8 @@ func (d *clienteDocker) uso(ctx context.Context) (usoDoDocker, error) {
 		if len(c.Names) > 0 {
 			nome = strings.TrimPrefix(c.Names[0], "/")
 		}
-		u.Containers = append(u.Containers, container{Nome: nome, Imagem: c.Image, Estado: c.State, Status: c.Status, Bytes: c.SizeRw})
+		u.Containers = append(u.Containers, container{
+			id: c.Id, Nome: nome, Projeto: c.Labels["com.docker.compose.project"], Imagem: c.Image, Estado: c.State, Status: c.Status, Bytes: c.SizeRw})
 	}
 	return u, nil
 }

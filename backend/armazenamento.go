@@ -44,13 +44,17 @@ type pasta struct {
 }
 
 var titulosDosApps = map[string]string{
-	"biblioteca": "Biblioteca Digital",
-	"acervo":     "Acervo",
-	"flashcards": "Flashcards",
-	"streaming":  "Streaming",
-	"prowlarr":   "Prowlarr",
-	"caddy":      "Caddy (proxy)",
-	"hub":        "Hub",
+	"biblioteca":         "Biblioteca Digital",
+	"biblioteca-digital": "Biblioteca Digital", // o projeto do Compose
+	"acervo":             "Acervo",
+	"flashcards":         "Flashcards",
+	"streaming":          "Streaming",
+	"prowlarr":           "Prowlarr",
+	"caddy":              "Caddy (proxy)",
+	"proxy":              "Caddy (proxy)",
+	"whisper":            "Whisper (transcrição)",
+	"parakeet":           "Parakeet (transcrição)",
+	"hub":                "Hub",
 }
 
 // Nomes conhecidos das pastas dentro de cada app; o resto aparece com o nome do disco.
