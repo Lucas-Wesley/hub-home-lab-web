@@ -1,7 +1,7 @@
 # Arquitetura do Ecossistema
 
 > Visão de nível alto de como as aplicações pessoais se encaixam. Vale para **todos** os projetos.
-> Atualizado em **09/11/2026**.
+> Atualizado em **10/11/2026**.
 
 ---
 
@@ -40,6 +40,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 | **Biblioteca Digital** | Leitor/biblioteca de PDF e EPUB com anotações | github.com/Lucas-Wesley/biblioteca-digital | No ar (`:8443`) |
 | **Flashcards** | App estilo Anki (Vue + Go + SQLite) | github.com/Lucas-Wesley/flashcards | No ar (`:8445`) |
 | **Extensão do Chrome** | Botão nas páginas que manda o link ao app certo (vídeo do YouTube → Acervo, página com frases de exemplo → Flashcards) | github.com/Lucas-Wesley/home-lab-plugin-web | Feita, instalada sem compactação |
+| **Streaming** | Canais, filmes e séries de uma assinatura IPTV e de torrents, com o celular como controle da TV e do projetor | github.com/Lucas-Wesley/home-lab-streaming | Pronto no Mac, ainda não publicado (`:8446`) |
 | **Hub** | Interface central que reúne todos; começou pelo painel do servidor | github.com/Lucas-Wesley/hub-home-lab-web | Painel do servidor no ar (`:8449`); conteúdo por último |
 
 ---
@@ -51,6 +52,7 @@ O **Hub** é apenas um **cliente** que consome essas APIs e junta tudo numa inte
 | Biblioteca Digital → Acervo | Capítulo/parágrafo vira **texto de referência** ou alimenta um **Tema** (feito no sentido Acervo lê da Biblioteca: D30 / R33) |
 | Biblioteca Digital → Flashcards | **Seleção** de texto vira **flashcard** |
 | Acervo → Flashcards | Tema, capítulo ou Referência vira proposta de **flashcards** (feito: D28 / F28) |
+| Streaming → Flashcards | A fala da legenda tocada no celular vira cartão no baralho Inglês, traduzida pelo Claude (`POST /api/notas`; S31 do Streaming) |
 | Extensão do Chrome → Acervo, Flashcards | Manda o link da página aberta (`POST /api/referencias`, `POST /api/links`) |
 | Hub → todos | Lê as APIs e mostra tudo junto |
 
@@ -90,6 +92,10 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
   `:8448` Prowlarr, `:8449` Hub).
   - O certificado raiz para instalar nos aparelhos fica em `http://192.168.1.20/ca.crt`.
   - A configuração está na pasta `proxy/` do homelab, copiada para `/opt/proxy`.
+- **Serviços compartilhados de fala** (rede `proxy`, sem porta no Caddy), com a API de transcrição da
+  OpenAI: **Whisper** (`http://whisper:8000`), que diz o idioma e entende ~99 idiomas, e **Parakeet**
+  (`http://parakeet:8000`), mais rápido e mais preciso para transcrever vídeos inteiros em inglês ou num
+  idioma europeu. Quando usar cada um: `parakeet/README.md` da pasta do homelab.
 - **Publicar:** `git push` na main e `./deploy.sh` de cada app.
   - O script roda os testes, constrói na VM, confere a saúde e volta ao commit anterior se falhar.
   - Segredos ficam em `/opt/apps/<app>.env`, fora do git.
