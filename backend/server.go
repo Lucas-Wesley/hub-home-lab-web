@@ -20,6 +20,11 @@ func newServer(a *app, web fs.FS, version string) http.Handler {
 	mux.HandleFunc("PUT /api/limpeza/agenda", a.handleSalvarAgenda)
 	mux.HandleFunc("POST /api/limpeza", a.handleLimparAgora)
 
+	mux.HandleFunc("GET /api/rede", a.handleRede)
+	mux.HandleFunc("POST /api/rede/protecao", a.handleProtecao)
+	mux.HandleFunc("POST /api/rede/liberados", a.handleLiberar)
+	mux.HandleFunc("DELETE /api/rede/liberados/{dominio}", a.handleBloquearDeNovo)
+
 	mux.HandleFunc("GET /api/sugestoes", a.handleSugestoes)
 	mux.HandleFunc("PUT /api/sugestoes/{id}", a.handleGuardarSugestao)
 	mux.HandleFunc("PATCH /api/sugestoes/{id}", a.handleMarcarSugestao)

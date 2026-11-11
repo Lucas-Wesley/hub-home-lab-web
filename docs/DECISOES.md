@@ -24,6 +24,7 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
   1, 2, 3, 7, 14 ou 30 dias, numa hora escolhida), e guarda o histórico.
 - **Ajustes:** Sugestões de melhoria, com a API comum (`/api/sugestoes`).
 - **Vigia:** avisa no celular, pelo ntfy, disco cheio, contêiner parado e backup atrasado (H9).
+- **Rede:** o AdGuard Home (DNS da casa): pausar e religar o bloqueio, liberar domínios (H10).
 
 ## A infraestrutura que o painel mostra
 
@@ -165,6 +166,24 @@ Um problema só avisa depois de aparecer em **duas conferências seguidas** (um 
 contêineres e não deve avisar) e **uma vez só**; avisa de novo se sumir e voltar. A lembrança fica na
 memória: se o Hub reiniciar com um problema em aberto, ele avisa de novo. Tocar abre o Hub
 (`HUB_LINK`).
+
+### H10. Rede: controlar o AdGuard Home pelo Hub (10/11/2026)
+
+Pedido do Lucas antes de ligar o AdGuard para a casa toda: ter no Hub o botão de voltar se algo
+quebrar. A tela **Rede** mostra o estado do bloqueio, as consultas e os bloqueios das últimas 24 h,
+os domínios bloqueados agora (um por domínio, com o aparelho) e os liberados, e tem três controles:
+
+- **Pausar o bloqueio** por 10 min, 1 h ou até religar, e **religar**. Pausado, o AdGuard continua
+  respondendo o DNS, só sem bloquear: tudo volta a abrir na hora, na casa toda. É o "voltar" de
+  verdade, sem mexer no roteador (que não tem API).
+- **Liberar** um domínio (digitado, colado como link ou tocado na lista de bloqueados): grava a regra
+  `@@||dominio^` nas regras personalizadas.
+- **Bloquear de novo** um liberado: tira só essa regra. As outras regras ficam para o painel do AdGuard.
+
+É a segunda exceção ao "só lê" (a primeira é a limpeza, H5). O Hub entra com um **usuário próprio**
+no AdGuard (`hub`), não com o do Lucas: a senha fica no `hub.env` e pode ser trocada sem mexer na
+dele. A API escuta só na ponte do Docker (`host.docker.internal:3001`). A vigia (H9) avisa no ntfy se
+o bloqueio ficar pausado **sem prazo**. Nos testes, um AdGuard falso (`rede_test.go`).
 
 ## Próximos passos
 

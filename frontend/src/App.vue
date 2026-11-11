@@ -4,6 +4,7 @@ import Ajustes from './Ajustes.vue'
 import Armazenamento from './Armazenamento.vue'
 import Icone from './Icone.vue'
 import Limpeza from './Limpeza.vue'
+import Rede from './Rede.vue'
 import Servidor from './Servidor.vue'
 import { api } from './api.js'
 
@@ -22,6 +23,7 @@ const MENU = [
   { rota: 'armazenamento', nome: 'Armazenamento', icone: 'disco' },
   { rota: 'servidor', nome: 'Servidor', icone: 'servidor' },
   { rota: 'limpeza', nome: 'Limpeza', icone: 'limpeza' },
+  { rota: 'rede', nome: 'Rede', icone: 'rede' },
   { rota: 'ajustes', nome: 'Ajustes', icone: 'ajustes' },
 ]
 
@@ -82,6 +84,7 @@ onBeforeUnmount(() => {
     <main class="conteudo">
       <Servidor v-if="rota.nome === 'servidor'" />
       <Limpeza v-else-if="rota.nome === 'limpeza'" />
+      <Rede v-else-if="rota.nome === 'rede'" />
       <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" :secao="rota.param" />
       <Armazenamento v-else />
     </main>

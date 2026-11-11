@@ -20,6 +20,10 @@ services:
       # Vigia (H9): disco, contêineres e backup, com aviso no celular pelo ntfy (tópico "servidor").
       NTFY_URL: http://ntfy/servidor
       BACKUP_STATUS: /host/backup/ultimo
+    # Rede (H10): a API do AdGuard escuta só na ponte do Docker (172.17.0.1:3001). O usuário e a senha
+    # do Hub no AdGuard (ADGUARD_USUARIO, ADGUARD_SENHA) ficam no /opt/apps/hub.env, fora do Git.
+    extra_hosts:
+      - host.docker.internal:host-gateway
     depends_on:
       - docker-proxy
     networks:

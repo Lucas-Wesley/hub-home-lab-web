@@ -18,6 +18,8 @@ type config struct {
 	ntfy   string
 	link   string
 	backup string
+	// Rede (H10): a API do AdGuard Home, com o usuário do Hub.
+	adguard configAdGuard
 }
 
 type configProxmox struct {
@@ -42,6 +44,12 @@ func configDoAmbiente() config {
 		ntfy:   os.Getenv("NTFY_URL"),
 		link:   env("HUB_LINK", "https://192.168.1.20:8449"),
 		backup: os.Getenv("BACKUP_STATUS"),
+		adguard: configAdGuard{
+			url:     env("ADGUARD_URL", "http://host.docker.internal:3001"),
+			usuario: env("ADGUARD_USUARIO", "hub"),
+			senha:   os.Getenv("ADGUARD_SENHA"),
+			painel:  env("ADGUARD_PAINEL", "https://192.168.1.20:8450"),
+		},
 	}
 }
 
@@ -54,6 +62,7 @@ type app struct {
 	docker  *clienteDocker  // nil sem DOCKER_URL
 	proxmox *clienteProxmox // nil sem PROXMOX_TOKEN
 	avisos  *avisador       // nil sem NTFY_URL
+	adguard *clienteAdGuard // nil sem ADGUARD_SENHA
 	medidas *cacheDeMedidas
 	amostra time.Duration // intervalo mínimo entre as duas leituras do processador
 
@@ -71,6 +80,9 @@ func novoApp(db *sql.DB, fuso *time.Location, relogio func() time.Time, cfg conf
 			return nil, err
 		}
 		a.proxmox = p
+	}
+	if cfg.adguard.senha != "" {
+		a.adguard = novoAdGuard(cfg.adguard)
 	}
 	if err := a.criarAgenda(); err != nil {
 		return nil, err

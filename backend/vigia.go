@@ -104,6 +104,12 @@ func (a *app) problemas(ctx context.Context) []problema {
 			}
 		}
 	}
+	if a.adguard != nil {
+		if protecao, ate, err := a.adguard.estado(ctx); err == nil && !protecao && ate.IsZero() {
+			ps = append(ps, problema{chave: "adguard-pausado", titulo: "Bloqueio de anúncios desligado",
+				texto: "O bloqueio do AdGuard foi pausado sem prazo. Religue na tela Rede do Hub quando terminar."})
+		}
+	}
 	if a.cfg.backup != "" {
 		if p := backupComProblema(a.cfg.backup, a.relogio()); p != nil {
 			ps = append(ps, *p)
