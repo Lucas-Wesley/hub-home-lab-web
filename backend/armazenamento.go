@@ -55,6 +55,8 @@ var titulosDosApps = map[string]string{
 	"whisper":            "Whisper (transcrição)",
 	"parakeet":           "Parakeet (transcrição)",
 	"hub":                "Hub",
+	"adguard":            "AdGuard Home (DNS)",
+	"ntfy":               "ntfy (avisos)",
 }
 
 // Nomes conhecidos das pastas dentro de cada app; o resto aparece com o nome do disco.

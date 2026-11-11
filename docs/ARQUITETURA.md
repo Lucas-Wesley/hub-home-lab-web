@@ -89,7 +89,7 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
 - **Onde roda:** VM `apps` (`192.168.1.20`) no Proxmox, com **Docker Compose**, um container por
   app e dados em `/srv/data/<app>`.
 - **Proxy:** **Caddy** com `tls internal`, uma porta por app (`:8443` Biblioteca, `:8444` Acervo, `:8445` Flashcards, `:8446` Streaming,
-  `:8448` Prowlarr, `:8449` Hub, `:8451` ntfy).
+  `:8448` Prowlarr, `:8449` Hub, `:8450` AdGuard Home, `:8451` ntfy).
   - O certificado raiz para instalar nos aparelhos fica em `http://192.168.1.20/ca.crt`.
   - A configuração está na pasta `proxy/` do homelab, copiada para `/opt/proxy`.
 - **Serviços compartilhados de fala** (rede `proxy`, sem porta no Caddy), com a API de transcrição da
