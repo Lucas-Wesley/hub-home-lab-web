@@ -9,11 +9,11 @@
 
 | App | Estado | Endereço |
 |-----|--------|----------|
-| Biblioteca Digital | **No ar**, em uso | `https://192.168.1.20:8443` |
-| Acervo | **No ar**, primeira versão completa | `https://192.168.1.20:8444` |
-| Flashcards | **No ar**, primeira versão (06/11/2026) | `https://192.168.1.20:8445` |
+| Biblioteca Digital | **No ar**, em uso | `https://biblioteca.internal` |
+| Acervo | **No ar**, primeira versão completa | `https://acervo.internal` |
+| Flashcards | **No ar**, primeira versão (06/11/2026) | `https://flashcards.internal` |
 | Extensão do Chrome | **Feita** (06/11/2026), instalada sem compactação | — (cliente dos apps) |
-| Hub | **Painel do servidor no ar** (09/11/2026); a parte de conteúdo é a última | `https://192.168.1.20:8449` |
+| Hub | **Painel do servidor no ar** (09/11/2026); a parte de conteúdo é a última | `https://hub.internal` |
 
 **Biblioteca Digital:**
 - PWA que lê EPUB (Readium) e PDF (PDF.js), com modo texto para PDF.

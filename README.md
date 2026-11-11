@@ -5,7 +5,7 @@ Biblioteca Digital, Flashcards) numa só interface — primeiro web, depois mobi
 
 Repositório: `github.com/Lucas-Wesley/hub-home-lab-web`
 
-> **Status (10/11/2026):** no ar o **painel do servidor** (`https://192.168.1.20:8449`):
+> **Status (10/11/2026):** no ar o **painel do servidor** (`https://hub.internal`):
 > armazenamento do Proxmox, da VM e de cada app, memória e processador de cada app, contêineres e a limpeza do Docker com
 > agenda. A parte de conteúdo (juntar Acervo, Biblioteca e Flashcards) continua para o fim, porque
 > depende das APIs dos outros apps. Estado e decisões em [`docs/DECISOES.md`](docs/DECISOES.md).

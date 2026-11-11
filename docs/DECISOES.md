@@ -3,9 +3,9 @@
 Estado atual, decisões e próximos passos do Hub. As decisões que valem para todos os apps ficam em
 [`ARQUITETURA.md`](ARQUITETURA.md) e [`ROADMAP.md`](ROADMAP.md).
 
-## Estado (10/11/2026)
+## Estado (11/11/2026)
 
-O Hub começou pelo **painel do servidor**, no ar em `https://192.168.1.20:8449`. Nesta primeira
+O Hub começou pelo **painel do servidor**, no ar em `https://hub.internal` (e no endereço antigo, `https://192.168.1.20:8449`). Nesta primeira
 versão ele só lê, com uma exceção: a limpeza do Docker.
 
 - **Armazenamento:**
@@ -22,6 +22,7 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
   - os contêineres Docker.
 - **Limpeza:** apaga o cache de build e as imagens soltas do Docker, agora ou por agenda (a cada
   1, 2, 3, 7, 14 ou 30 dias, numa hora escolhida), e guarda o histórico.
+- **Aplicações:** a tela de abertura, com o link de cada app pelo nome `.internal` e como instalá-lo no celular (H12).
 - **Ajustes:** Sugestões de melhoria, com a API comum (`/api/sugestoes`).
 - **Vigia:** avisa no celular, pelo ntfy, disco cheio, contêiner parado e backup atrasado (H9).
 - **Rede:** o AdGuard Home (DNS da casa): pausar e religar o bloqueio, liberar domínios (H10).
@@ -207,6 +208,29 @@ numa conta diferente dos outros sem ninguém lembrar). Agora a configuração é
 - Sem custo na tela: a assinatura não cobra por uso.
 
 É a terceira exceção ao "só lê". Nos testes, um Claude falso no lugar da CLI (`claude_test.go`).
+
+### H12. Aplicações: os apps pelo nome, numa tela só (11/11/2026)
+
+Com o item 3 do `SUGESTOES.md` (nomes em vez de IP), cada app ganhou um nome: `biblioteca.internal`,
+`acervo.internal`, `flashcards.internal`, `streaming.internal`, `hub.internal`, `adguard.internal`,
+`ntfy.internal` e `prowlarr.internal`.
+
+- **DNS:** uma regra só no AdGuard (*DNS rewrite*), `*.internal → 192.168.1.20`, criada com o usuário
+  `hub`. `.internal` é o domínio reservado pela ICANN para redes privadas; `.local` é do mDNS e `.casa`
+  existe na internet.
+- **Caddy:** cada site responde pelo nome, na porta 443, e pelo IP:porta de antes. Os PWAs já
+  instalados, os links guardados nos apps e o app do ntfy no celular seguem no endereço antigo, que
+  não tem data para sair. A porta das telas do Streaming (`http://192.168.1.20:8447`) fica sem nome,
+  porque nem todo aparelho DLNA resolve nomes.
+- **Os links novos que os apps geram** (avisos, cartões, resumos) usam os nomes: `*_LINK` e
+  `ADGUARD_PAINEL` mudaram de padrão.
+- **A tela Aplicações** passou a ser a tela de abertura do Hub: um cartão por app, com o ícone dele, e
+  os painéis do servidor. Tem o passo a passo de instalar cada app no celular no endereço novo e o
+  aviso de que um app instalado pelo IP é outro app para o celular (os livros offline da Biblioteca
+  precisam ser baixados de novo). No celular, "Armazenamento" vira "Disco" na barra de abas, para caber
+  a sétima.
+- **Fora de casa:** os nomes só funcionam pelo Tailscale com o DNS dividido (`internal` → `192.168.1.20`),
+  configurado no painel do Tailscale.
 
 ## Próximos passos
 

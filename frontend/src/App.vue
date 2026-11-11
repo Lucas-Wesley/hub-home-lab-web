@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import Ajustes from './Ajustes.vue'
+import Aplicacoes from './Aplicacoes.vue'
 import Armazenamento from './Armazenamento.vue'
 import Claude from './Claude.vue'
 import Icone from './Icone.vue'
@@ -17,11 +18,12 @@ const versao = ref('')
 const rota = computed(() => {
   const h = decodeURIComponent(hash.value.replace(/^#\/?/, ''))
   const [nome, ...resto] = h.split('/')
-  return { nome: nome || 'armazenamento', param: resto.join('/') }
+  return { nome: nome || 'aplicacoes', param: resto.join('/') }
 })
 
 const MENU = [
-  { rota: 'armazenamento', nome: 'Armazenamento', icone: 'disco' },
+  { rota: 'aplicacoes', nome: 'Aplicações', icone: 'apps' },
+  { rota: 'armazenamento', nome: 'Armazenamento', curto: 'Disco', icone: 'disco' },
   { rota: 'servidor', nome: 'Servidor', icone: 'servidor' },
   { rota: 'limpeza', nome: 'Limpeza', icone: 'limpeza' },
   { rota: 'rede', nome: 'Rede', icone: 'rede' },
@@ -37,7 +39,7 @@ function ir(destino) {
 const telaAnterior = ref('')
 
 function aoMudarHash() {
-  if (location.hash.startsWith('#/ajustes') && !hash.value.startsWith('#/ajustes')) telaAnterior.value = hash.value || '#/armazenamento'
+  if (location.hash.startsWith('#/ajustes') && !hash.value.startsWith('#/ajustes')) telaAnterior.value = hash.value || '#/aplicacoes'
   hash.value = location.hash
 }
 
@@ -77,7 +79,8 @@ onBeforeUnmount(() => {
           @click="ir(item.rota)"
         >
           <Icone :nome="item.icone" />
-          <span class="nome">{{ item.nome }}</span>
+          <span class="nome" :class="{ 'tem-curto': item.curto }">{{ item.nome }}</span>
+          <span v-if="item.curto" class="nome curto" aria-hidden="true">{{ item.curto }}</span>
         </button>
       </nav>
       <div class="rodape">{{ versao ? `versão ${versao.slice(0, 7)}` : 'sem conexão' }}</div>
@@ -89,7 +92,8 @@ onBeforeUnmount(() => {
       <Rede v-else-if="rota.nome === 'rede'" />
       <Claude v-else-if="rota.nome === 'claude'" />
       <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" :secao="rota.param" />
-      <Armazenamento v-else />
+      <Armazenamento v-else-if="rota.nome === 'armazenamento'" />
+      <Aplicacoes v-else />
     </main>
 
     <Transition name="recado">
@@ -181,6 +185,10 @@ nav {
 }
 
 
+.curto {
+  display: none;
+}
+
 .rodape {
   margin-top: auto;
   padding: 0 10px;
@@ -241,8 +249,21 @@ nav {
     display: none;
   }
 
+  /* Sete abas numa linha: o nome longo dá lugar ao curto (o leitor de tela continua lendo o longo). */
+  .nome.tem-curto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .curto {
+    display: inline;
+  }
+
   nav {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
   }
 
   .item {

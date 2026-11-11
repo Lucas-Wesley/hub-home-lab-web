@@ -30,6 +30,12 @@ defineProps({ nome: { type: String, required: true } })
       <circle cx="15" cy="7.5" r="2" />
       <circle cx="9" cy="16.5" r="2" />
     </template>
+    <template v-else-if="nome === 'apps'">
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+    </template>
     <template v-else-if="nome === 'claude'">
       <path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4M6 6l2.8 2.8M15.2 15.2 18 18M6 18l2.8-2.8M15.2 8.8 18 6" />
     </template>

@@ -3,8 +3,15 @@ import { expect, test } from '@playwright/test'
 // Um fluxo só, na ordem em que o Lucas usa: ver o disco → limpar → agendar → servidor → Ajustes.
 test.describe.configure({ mode: 'serial' })
 
-test('mostra o disco da VM, cada app e o cache do Docker', async ({ page }) => {
+test('abre nas Aplicações, com o link de cada app pelo nome', async ({ page }) => {
   await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Aplicações' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Flashcards/ })).toHaveAttribute('href', 'https://flashcards.internal')
+  await expect(page.getByRole('link', { name: /Biblioteca/ })).toHaveAttribute('href', 'https://biblioteca.internal')
+})
+
+test('mostra o disco da VM, cada app e o cache do Docker', async ({ page }) => {
+  await page.goto('/#/armazenamento')
   await expect(page.getByRole('heading', { name: 'Armazenamento' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Armazenamento' })).toHaveAttribute('aria-current', 'page')
 
