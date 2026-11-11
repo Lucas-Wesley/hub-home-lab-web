@@ -185,6 +185,29 @@ no AdGuard (`hub`), não com o do Lucas: a senha fica no `hub.env` e pode ser tr
 dele. A API escuta só na ponte do Docker (`host.docker.internal:3001`). A vigia (H9) avisa no ntfy se
 o bloqueio ficar pausado **sem prazo**. Nos testes, um AdGuard falso (`rede_test.go`).
 
+### H11. Claude: as duas contas num lugar só, com o uso e a troca à mão (10/11/2026)
+
+O Lucas tem duas contas Pro: a **Pessoal**, principal do homelab, e a da **Empresa**, para uso
+eventual. Antes, cada app tinha o próprio `CLAUDE_CODE_OAUTH_TOKEN` no `.env` (e o Streaming estava
+numa conta diferente dos outros sem ninguém lembrar). Agora a configuração é uma só:
+
+- O Hub guarda os dois tokens em `/srv/data/claude/contas.json` (só o Hub lê, `0600`) e escreve o da
+  conta ativa em `/srv/data/claude/ativa/token`. Os três apps montam só a pasta `ativa`, só para
+  leitura, e leem o arquivo **a cada chamada** (`CLAUDE_TOKEN_ARQUIVO`): a troca vale na próxima
+  tarefa, sem reiniciar. Fora do backup de propósito: perdido, é gerar outro token.
+- A tela **Claude** mostra, por conta, o uso das janelas de **5 horas** e da **semana** e quando cada
+  uma zera, e tem **Usar esta conta** e **Trocar token** (colar o do `claude setup-token`; o Hub
+  confere com o Claude antes de guardar). O token nunca sai pela API.
+- O uso vem do próprio Claude Code: uma chamada mínima ao Haiku, sem ferramentas nem instruções,
+  devolve o `rate_limit_event` com as duas janelas. O token do `setup-token` não tem permissão para
+  a API de uso da conta (`user:profile`). Por isso a imagem do Hub passou a ter o Claude Code.
+- **A troca é sempre do Lucas, nunca automática** (pedido dele; revezar contas sozinho para fugir do
+  limite é zona cinzenta nos termos). A vigia (H9) só avisa: a conta ativa em 90% de uma janela,
+  esgotada ou com o login recusado, e um token a 30 dias de vencer (um ano depois de colado).
+- Sem custo na tela: a assinatura não cobra por uso.
+
+É a terceira exceção ao "só lê". Nos testes, um Claude falso no lugar da CLI (`claude_test.go`).
+
 ## Próximos passos
 
 - [ ] Criar o token do Proxmox (H3) e conferir a tela Servidor com os números reais.
@@ -192,4 +215,4 @@ o bloqueio ficar pausado **sem prazo**. Nos testes, um AdGuard falso (`rede_test
   VM apaga não volta para o `local-lvm`.
 - [ ] Manutenção por app: cada app com uma API para ver e limpar o que é temporário (histórico do
   Claude, pastas de trabalho, mídia sem uso). Ver o pedido de 06/11 no ROADMAP.
-- [ ] Estado da chave do Claude por app e as pesquisas em andamento.
+- [ ] As pesquisas em andamento de cada app (a chave do Claude já está na tela Claude, H11).

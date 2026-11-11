@@ -20,6 +20,11 @@ type config struct {
 	backup string
 	// Rede (H10): a API do AdGuard Home, com o usuário do Hub.
 	adguard configAdGuard
+	// Claude (H11): a pasta com os tokens das contas (vazia = sem a tela Claude), o programa do
+	// Claude Code e a pasta onde ele guarda as próprias configurações nas medidas.
+	claudeContas   string
+	claudePrograma string
+	claudeCasa     string
 }
 
 type configProxmox struct {
@@ -50,6 +55,9 @@ func configDoAmbiente() config {
 			senha:   os.Getenv("ADGUARD_SENHA"),
 			painel:  env("ADGUARD_PAINEL", "https://192.168.1.20:8450"),
 		},
+		claudeContas:   os.Getenv("CLAUDE_CONTAS"),
+		claudePrograma: env("CLAUDE_BIN", "claude"),
+		claudeCasa:     env("CLAUDE_CASA", os.TempDir()),
 	}
 }
 
@@ -63,6 +71,7 @@ type app struct {
 	proxmox *clienteProxmox // nil sem PROXMOX_TOKEN
 	avisos  *avisador       // nil sem NTFY_URL
 	adguard *clienteAdGuard // nil sem ADGUARD_SENHA
+	claude  *contasDoClaude // nil sem CLAUDE_CONTAS
 	medidas *cacheDeMedidas
 	amostra time.Duration // intervalo mínimo entre as duas leituras do processador
 
@@ -83,6 +92,9 @@ func novoApp(db *sql.DB, fuso *time.Location, relogio func() time.Time, cfg conf
 	}
 	if cfg.adguard.senha != "" {
 		a.adguard = novoAdGuard(cfg.adguard)
+	}
+	if cfg.claudeContas != "" {
+		a.claude = novasContasDoClaude(cfg.claudeContas, cfg.claudePrograma, cfg.claudeCasa, relogio)
 	}
 	if err := a.criarAgenda(); err != nil {
 		return nil, err

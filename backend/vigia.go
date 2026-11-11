@@ -110,6 +110,9 @@ func (a *app) problemas(ctx context.Context) []problema {
 				texto: "O bloqueio do AdGuard foi pausado sem prazo. Religue na tela Rede do Hub quando terminar."})
 		}
 	}
+	if a.claude != nil {
+		ps = append(ps, a.claude.problemas(ctx)...)
+	}
 	if a.cfg.backup != "" {
 		if p := backupComProblema(a.cfg.backup, a.relogio()); p != nil {
 			ps = append(ps, *p)

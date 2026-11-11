@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import Ajustes from './Ajustes.vue'
 import Armazenamento from './Armazenamento.vue'
+import Claude from './Claude.vue'
 import Icone from './Icone.vue'
 import Limpeza from './Limpeza.vue'
 import Rede from './Rede.vue'
@@ -24,6 +25,7 @@ const MENU = [
   { rota: 'servidor', nome: 'Servidor', icone: 'servidor' },
   { rota: 'limpeza', nome: 'Limpeza', icone: 'limpeza' },
   { rota: 'rede', nome: 'Rede', icone: 'rede' },
+  { rota: 'claude', nome: 'Claude', icone: 'claude' },
   { rota: 'ajustes', nome: 'Ajustes', icone: 'ajustes' },
 ]
 
@@ -85,6 +87,7 @@ onBeforeUnmount(() => {
       <Servidor v-if="rota.nome === 'servidor'" />
       <Limpeza v-else-if="rota.nome === 'limpeza'" />
       <Rede v-else-if="rota.nome === 'rede'" />
+      <Claude v-else-if="rota.nome === 'claude'" />
       <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" :secao="rota.param" />
       <Armazenamento v-else />
     </main>
@@ -239,7 +242,7 @@ nav {
   }
 
   nav {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
   }
 
   .item {

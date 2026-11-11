@@ -9,6 +9,9 @@ services:
       - /sys/fs/cgroup:/host/cgroup:ro
       # O resultado do último backup (homelab/backup), só para a vigia conferir que ele roda (H9).
       - /var/lib/homelab-backup:/host/backup:ro
+      # Claude (H11): os tokens das duas contas e o arquivo da conta ativa, que os apps montam só
+      # para leitura. Fora do backup de propósito: perdido, é gerar outro token.
+      - /srv/data/claude:/claude
     environment:
       APPS_DIR: /apps
       CGROUP_DIR: /host/cgroup
@@ -20,6 +23,8 @@ services:
       # Vigia (H9): disco, contêineres e backup, com aviso no celular pelo ntfy (tópico "servidor").
       NTFY_URL: http://ntfy/servidor
       BACKUP_STATUS: /host/backup/ultimo
+      CLAUDE_CONTAS: /claude
+      CLAUDE_CASA: /data/claude
     # Rede (H10): a API do AdGuard escuta só na ponte do Docker (172.17.0.1:3001). O usuário e a senha
     # do Hub no AdGuard (ADGUARD_USUARIO, ADGUARD_SENHA) ficam no /opt/apps/hub.env, fora do Git.
     extra_hosts:

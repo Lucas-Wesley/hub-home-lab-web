@@ -56,6 +56,7 @@ var titulosDosApps = map[string]string{
 	"parakeet":           "Parakeet (transcrição)",
 	"hub":                "Hub",
 	"adguard":            "AdGuard Home (DNS)",
+	"claude":             "Contas do Claude",
 	"ntfy":               "ntfy (avisos)",
 }
 
