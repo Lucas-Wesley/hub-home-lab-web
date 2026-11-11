@@ -13,6 +13,11 @@ type config struct {
 	docker  string // endereço do proxy do Docker; vazio = painel sem Docker
 	cgroup  string // cgroup v2 da VM: memória e processador de cada contêiner; vazio = sem
 	proxmox configProxmox
+	// Vigia (H9): o ntfy do homelab com o tópico (vazio, sem avisos), o endereço do Hub que a
+	// notificação abre e o resultado do último backup (vazio, o backup não é conferido).
+	ntfy   string
+	link   string
+	backup string
 }
 
 type configProxmox struct {
@@ -34,6 +39,9 @@ func configDoAmbiente() config {
 			token:     os.Getenv("PROXMOX_TOKEN"),
 			impressao: os.Getenv("PROXMOX_FINGERPRINT"),
 		},
+		ntfy:   os.Getenv("NTFY_URL"),
+		link:   env("HUB_LINK", "https://192.168.1.20:8449"),
+		backup: os.Getenv("BACKUP_STATUS"),
 	}
 }
 
@@ -45,6 +53,7 @@ type app struct {
 	cfg     config
 	docker  *clienteDocker  // nil sem DOCKER_URL
 	proxmox *clienteProxmox // nil sem PROXMOX_TOKEN
+	avisos  *avisador       // nil sem NTFY_URL
 	medidas *cacheDeMedidas
 	amostra time.Duration // intervalo mínimo entre as duas leituras do processador
 
@@ -52,7 +61,7 @@ type app struct {
 }
 
 func novoApp(db *sql.DB, fuso *time.Location, relogio func() time.Time, cfg config) (*app, error) {
-	a := &app{db: db, fuso: fuso, relogio: relogio, cfg: cfg, medidas: &cacheDeMedidas{}, amostra: time.Second}
+	a := &app{db: db, fuso: fuso, relogio: relogio, cfg: cfg, medidas: &cacheDeMedidas{}, amostra: time.Second, avisos: novoAvisador(cfg.ntfy)}
 	if cfg.docker != "" {
 		a.docker = novoDocker(cfg.docker)
 	}

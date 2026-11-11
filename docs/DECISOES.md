@@ -23,6 +23,7 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
 - **Limpeza:** apaga o cache de build e as imagens soltas do Docker, agora ou por agenda (a cada
   1, 2, 3, 7, 14 ou 30 dias, numa hora escolhida), e guarda o histórico.
 - **Ajustes:** Sugestões de melhoria, com a API comum (`/api/sugestoes`).
+- **Vigia:** avisa no celular, pelo ntfy, disco cheio, contêiner parado e backup atrasado (H9).
 
 ## A infraestrutura que o painel mostra
 
@@ -148,6 +149,23 @@ Por isso o Hub lê o cgroup v2 da VM, montado só para leitura em `/host/cgroup`
 - **O resto:** a tela mostra a diferença entre o "em uso" da VM e a soma dos apps como "Sistema e
   o resto" (o Linux, o Docker, o que roda fora dos contêineres).
 
+### H9. Vigia do servidor com aviso no celular (10/11/2026)
+
+O Hub confere o servidor a cada 10 minutos e avisa pelo **ntfy** do homelab (`NTFY_URL`, tópico
+`servidor`; sem a variável, não confere):
+
+- disco da VM e armazenamentos do Proxmox acima de **85%**;
+- NVMe com o SMART diferente de `PASSED` ou com 10% ou menos de vida útil;
+- contêiner parado ou com a conferência de saúde falhando (`unhealthy`), pelo `/system/df` que o
+  proxy já libera (H4, H8);
+- **backup atrasado**: o arquivo `/var/lib/homelab-backup/ultimo`, montado só para leitura
+  (`BACKUP_STATUS`), sem rodada há mais de 26 h. A falha do backup quem avisa é o próprio script.
+
+Um problema só avisa depois de aparecer em **duas conferências seguidas** (um deploy recria os
+contêineres e não deve avisar) e **uma vez só**; avisa de novo se sumir e voltar. A lembrança fica na
+memória: se o Hub reiniciar com um problema em aberto, ele avisa de novo. Tocar abre o Hub
+(`HUB_LINK`).
+
 ## Próximos passos
 
 - [ ] Criar o token do Proxmox (H3) e conferir a tela Servidor com os números reais.
@@ -156,4 +174,3 @@ Por isso o Hub lê o cgroup v2 da VM, montado só para leitura em `/host/cgroup`
 - [ ] Manutenção por app: cada app com uma API para ver e limpar o que é temporário (histórico do
   Claude, pastas de trabalho, mídia sem uso). Ver o pedido de 06/11 no ROADMAP.
 - [ ] Estado da chave do Claude por app e as pesquisas em andamento.
-- [ ] Alertas fora do painel (por exemplo, disco acima de 85%), se fizer falta.

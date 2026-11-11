@@ -89,13 +89,17 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
 - **Onde roda:** VM `apps` (`192.168.1.20`) no Proxmox, com **Docker Compose**, um container por
   app e dados em `/srv/data/<app>`.
 - **Proxy:** **Caddy** com `tls internal`, uma porta por app (`:8443` Biblioteca, `:8444` Acervo, `:8445` Flashcards, `:8446` Streaming,
-  `:8448` Prowlarr, `:8449` Hub).
+  `:8448` Prowlarr, `:8449` Hub, `:8451` ntfy).
   - O certificado raiz para instalar nos aparelhos fica em `http://192.168.1.20/ca.crt`.
   - A configuração está na pasta `proxy/` do homelab, copiada para `/opt/proxy`.
 - **Serviços compartilhados de fala** (rede `proxy`, sem porta no Caddy), com a API de transcrição da
   OpenAI: **Whisper** (`http://whisper:8000`), que diz o idioma e entende ~99 idiomas, e **Parakeet**
   (`http://parakeet:8000`), mais rápido e mais preciso para transcrever vídeos inteiros em inglês ou num
   idioma europeu. Quando usar cada um: `parakeet/README.md` da pasta do homelab.
+- **Avisos no celular:** o **ntfy** (`homelab/ntfy`), na rede `proxy`. Cada app publica em
+  `NTFY_URL` (`http://ntfy/<tópico>`: `acervo`, `flashcards`, `streaming`, `servidor`); sem a variável,
+  não avisa. Só avisa o que pede ação ou o que o Lucas está esperando (pronto, para revisar, falhou),
+  nunca "começou". O envio fica num `ntfy.go` igual em cada app.
 - **Publicar:** `git push` na main e `./deploy.sh` de cada app.
   - O script roda os testes, constrói na VM, confere a saúde e volta ao commit anterior se falhar.
   - Segredos ficam em `/opt/apps/<app>.env`, fora do git.

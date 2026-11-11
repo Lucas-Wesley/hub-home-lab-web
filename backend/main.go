@@ -49,6 +49,7 @@ func main() {
 		log.Fatal(err)
 	}
 	go a.agendaDeLimpeza(ctx)
+	go a.vigiar(ctx)
 
 	web, err := fs.Sub(webDist, "web/dist")
 	if err != nil {

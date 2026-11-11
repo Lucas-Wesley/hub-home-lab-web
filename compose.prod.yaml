@@ -7,6 +7,8 @@ services:
       - /srv/data:/apps:ro
       # O cgroup da VM, só para ler a memória e o processador de cada contêiner (H8).
       - /sys/fs/cgroup:/host/cgroup:ro
+      # O resultado do último backup (homelab/backup), só para a vigia conferir que ele roda (H9).
+      - /var/lib/homelab-backup:/host/backup:ro
     environment:
       APPS_DIR: /apps
       CGROUP_DIR: /host/cgroup
@@ -15,6 +17,9 @@ services:
       PROXMOX_NODE: pve
       # A impressão digital do certificado do Proxmox (README do homelab); vence em 28/10/2028.
       PROXMOX_FINGERPRINT: BE:AE:94:69:B5:21:47:DC:4E:5E:CE:1C:69:9F:0F:06:82:33:B3:DA:D3:EB:E0:4F:6A:CA:71:02:F7:09:19:32
+      # Vigia (H9): disco, contêineres e backup, com aviso no celular pelo ntfy (tópico "servidor").
+      NTFY_URL: http://ntfy/servidor
+      BACKUP_STATUS: /host/backup/ultimo
     depends_on:
       - docker-proxy
     networks:
