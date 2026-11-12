@@ -13,6 +13,9 @@ func newServer(a *app, web fs.FS, version string) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", a.handleHealth(version))
 
+	mux.HandleFunc("GET /api/inicio", a.handleInicio)
+	mux.HandleFunc("PUT /api/inicio", a.handleSalvarInicio)
+
 	mux.HandleFunc("GET /api/armazenamento", a.handleArmazenamento)
 	mux.HandleFunc("GET /api/servidor", a.handleServidor)
 

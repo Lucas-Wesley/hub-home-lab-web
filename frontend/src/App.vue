@@ -5,6 +5,7 @@ import Aplicacoes from './Aplicacoes.vue'
 import Armazenamento from './Armazenamento.vue'
 import Claude from './Claude.vue'
 import Icone from './Icone.vue'
+import Inicio from './Inicio.vue'
 import Limpeza from './Limpeza.vue'
 import Rede from './Rede.vue'
 import Servidor from './Servidor.vue'
@@ -18,11 +19,12 @@ const versao = ref('')
 const rota = computed(() => {
   const h = decodeURIComponent(hash.value.replace(/^#\/?/, ''))
   const [nome, ...resto] = h.split('/')
-  return { nome: nome || 'aplicacoes', param: resto.join('/') }
+  return { nome: nome || 'inicio', param: resto.join('/') }
 })
 
 const MENU = [
-  { rota: 'aplicacoes', nome: 'Aplicações', icone: 'apps' },
+  { rota: 'inicio', nome: 'Início', icone: 'inicio' },
+  { rota: 'aplicacoes', nome: 'Aplicações', curto: 'Apps', icone: 'apps' },
   { rota: 'armazenamento', nome: 'Armazenamento', curto: 'Disco', icone: 'disco' },
   { rota: 'servidor', nome: 'Servidor', icone: 'servidor' },
   { rota: 'limpeza', nome: 'Limpeza', icone: 'limpeza' },
@@ -39,7 +41,7 @@ function ir(destino) {
 const telaAnterior = ref('')
 
 function aoMudarHash() {
-  if (location.hash.startsWith('#/ajustes') && !hash.value.startsWith('#/ajustes')) telaAnterior.value = hash.value || '#/aplicacoes'
+  if (location.hash.startsWith('#/ajustes') && !hash.value.startsWith('#/ajustes')) telaAnterior.value = hash.value || '#/inicio'
   hash.value = location.hash
 }
 
@@ -93,7 +95,8 @@ onBeforeUnmount(() => {
       <Claude v-else-if="rota.nome === 'claude'" />
       <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" :secao="rota.param" />
       <Armazenamento v-else-if="rota.nome === 'armazenamento'" />
-      <Aplicacoes v-else />
+      <Aplicacoes v-else-if="rota.nome === 'aplicacoes'" />
+      <Inicio v-else />
     </main>
 
     <Transition name="recado">
@@ -249,7 +252,7 @@ nav {
     display: none;
   }
 
-  /* Sete abas numa linha: o nome longo dá lugar ao curto (o leitor de tela continua lendo o longo). */
+  /* Oito abas numa linha: o nome longo dá lugar ao curto (o leitor de tela continua lendo o longo). */
   .nome.tem-curto {
     position: absolute;
     width: 1px;
@@ -263,7 +266,7 @@ nav {
   }
 
   nav {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(8, 1fr);
   }
 
   .item {
@@ -296,6 +299,13 @@ nav {
   .recado {
     bottom: calc(80px + env(safe-area-inset-bottom));
   }
+}
 
+/* Celular estreito (360 px): oito nomes só cabem com a letra um pouco menor. */
+@media (max-width: 380px) {
+  .item {
+    font-size: 0.6rem;
+    letter-spacing: -0.01em;
+  }
 }
 </style>

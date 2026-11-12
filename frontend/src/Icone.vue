@@ -12,6 +12,9 @@ defineProps({ nome: { type: String, required: true } })
       <rect x="4" y="14" width="16" height="6" rx="1.5" />
       <path d="M7.5 7h.01M7.5 17h.01" />
     </template>
+    <template v-else-if="nome === 'inicio'">
+      <path d="M4.5 10.5 12 4.5l7.5 6V19a1 1 0 01-1 1h-4v-5.5h-5V20h-4a1 1 0 01-1-1z" />
+    </template>
     <template v-else-if="nome === 'disco'">
       <ellipse cx="12" cy="6.5" rx="7.5" ry="2.5" />
       <path d="M4.5 6.5v11c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-11M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5" />

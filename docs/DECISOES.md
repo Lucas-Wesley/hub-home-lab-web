@@ -3,7 +3,7 @@
 Estado atual, decisões e próximos passos do Hub. As decisões que valem para todos os apps ficam em
 [`ARQUITETURA.md`](ARQUITETURA.md) e [`ROADMAP.md`](ROADMAP.md).
 
-## Estado (11/11/2026)
+## Estado (12/11/2026)
 
 O Hub começou pelo **painel do servidor**, no ar em `https://hub.internal` (e no endereço antigo, `https://192.168.1.20:8449`). Nesta primeira
 versão ele só lê, com uma exceção: a limpeza do Docker.
@@ -22,7 +22,9 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
   - os contêineres Docker.
 - **Limpeza:** apaga o cache de build e as imagens soltas do Docker, agora ou por agenda (a cada
   1, 2, 3, 7, 14 ou 30 dias, numa hora escolhida), e guarda o histórico.
-- **Aplicações:** a tela de abertura, com o link de cada app pelo nome `.internal` e como instalá-lo no celular (H12).
+- **Início:** a tela de abertura, uma página de anotações como no Notion: texto, lista, checklist e
+  toggle (H13).
+- **Aplicações:** o link de cada app pelo nome `.internal` e como instalá-lo no celular (H12).
 - **Ajustes:** Sugestões de melhoria, com a API comum (`/api/sugestoes`).
 - **Vigia:** avisa no celular, pelo ntfy, disco cheio, contêiner parado e backup atrasado (H9).
 - **Rede:** o AdGuard Home (DNS da casa): pausar e religar o bloqueio, liberar domínios (H10).
@@ -231,6 +233,28 @@ Com o item 3 do `SUGESTOES.md` (nomes em vez de IP), cada app ganhou um nome: `b
   a sétima.
 - **Fora de casa:** os nomes só funcionam pelo Tailscale com o DNS dividido (`internal` → `192.168.1.20`),
   configurado no painel do Tailscale.
+
+### H13. Início: uma página de anotações como no Notion (12/11/2026)
+
+O Lucas quis um primeiro item no menu, "Início", em que a página inteira é o campo de texto: sem caixa,
+sem botão de salvar.
+
+- **O que tem, por enquanto:** texto, lista com pontinhos, checklist (marcado fica riscado) e toggle,
+  que abre e fecha e aceita listas dentro. Os atalhos são os do Notion, no começo da linha: `- ` lista,
+  `[] ` checklist, `> ` toggle; dentro de uma lista, `- ` e `[] ` trocam o tipo só da linha. Enter numa
+  linha vazia sai da lista ou do toggle. Digitar `/` abre um menu com os quatro, porque no teclado do
+  Android os atalhos às vezes falham. Título, negrito pelo menu, lista numerada e várias páginas ficam
+  para depois.
+- **Editor:** Tiptap 3 (ProseMirror), em `frontend/src/editor.js`. O desenho do toggle é nosso: o do
+  Tiptap guarda o aberto/fechado também no DOM e às vezes nascia fechado; o nosso lê só o atributo
+  `open`, que é salvo, e o CSS esconde o conteúdo.
+- **Onde fica:** no banco do Hub, tabela `inicio` (uma linha só), com o JSON do editor.
+  `GET /api/inicio` e `PUT /api/inicio` com `{"conteudo": <doc>}`; o servidor só confere que é um
+  documento (`type: "doc"`). Salva 0,7 s depois de parar de digitar e, ao sair do app, manda o que
+  faltou (`keepalive`). Quem salva por último vale: dois aparelhos editando ao mesmo tempo não se
+  juntam.
+- **Abertura e menu:** o Início virou a tela de abertura (antes era Aplicações). No celular, a barra
+  tem oito abas: "Aplicações" vira "Apps" e, até 380 px de largura, a letra fica um pouco menor.
 
 ## Próximos passos
 

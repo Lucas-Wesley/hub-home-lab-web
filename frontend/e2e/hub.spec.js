@@ -3,8 +3,64 @@ import { expect, test } from '@playwright/test'
 // Um fluxo só, na ordem em que o Lucas usa: ver o disco → limpar → agendar → servidor → Ajustes.
 test.describe.configure({ mode: 'serial' })
 
-test('abre nas Aplicações, com o link de cada app pelo nome', async ({ page }) => {
+test('abre no Início: a página é o campo, com texto, checklist, lista e toggle, e salva sozinha', async ({ page }) => {
   await page.goto('/')
+  await expect(page.getByRole('button', { name: 'Início' })).toHaveAttribute('aria-current', 'page')
+  const folha = page.getByRole('textbox', { name: 'Início' })
+  await expect(folha).toHaveAttribute('contenteditable', 'true')
+  await folha.click()
+
+  // Texto, depois os atalhos do Notion: "[] " checklist e "- " lista.
+  await page.keyboard.type('Compras da semana')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('[] Pão')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Café')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Ideia solta')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+
+  // "> " cria o toggle; Enter no título vai para dentro, onde cabe uma lista.
+  await page.keyboard.type('> Viagem')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Passagem')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+
+  // O menu do "/" (para o celular, onde os atalhos podem falhar).
+  await page.keyboard.type('/check')
+  await expect(page.getByRole('option', { name: /Checklist/ })).toBeVisible()
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Reservar hotel')
+
+  const tarefas = folha.locator('li[data-checked]')
+  await expect(tarefas).toHaveCount(3)
+  await tarefas.first().getByRole('checkbox').check()
+  await expect(tarefas.first().locator('p')).toHaveCSS('text-decoration-line', 'line-through')
+  await expect(folha.locator('ul:not([data-type]) li', { hasText: 'Ideia solta' })).toBeVisible()
+  const toggle = folha.locator('[data-type="details"]')
+  await expect(toggle.locator('summary')).toHaveText('Viagem')
+  await expect(toggle.locator('[data-type="detailsContent"] li', { hasText: 'Passagem' })).toBeVisible()
+  await expect(toggle.locator('[data-type="detailsContent"] li[data-checked]', { hasText: 'Reservar hotel' })).toBeVisible()
+
+  // Fechar o toggle esconde o que está dentro.
+  await page.getByRole('button', { name: 'Fechar o toggle' }).click()
+  await expect(toggle.getByText('Passagem')).toBeHidden()
+
+  // Salva sozinho: depois de recarregar, está tudo lá, com o toggle fechado e o Pão riscado.
+  await page.waitForResponse((r) => r.url().endsWith('/api/inicio') && r.request().method() === 'PUT')
+  await page.waitForTimeout(1000)
+  await page.reload()
+  await expect(folha.getByText('Compras da semana')).toBeVisible()
+  await expect(folha.locator('li[data-checked="true"]', { hasText: 'Pão' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Abrir o toggle' })).toBeVisible()
+  await expect(folha.getByText('Passagem')).toBeHidden()
+})
+
+test('Aplicações tem o link de cada app pelo nome', async ({ page }) => {
+  await page.goto('/#/aplicacoes')
   await expect(page.getByRole('heading', { name: 'Aplicações' })).toBeVisible()
   await expect(page.getByRole('link', { name: /Flashcards/ })).toHaveAttribute('href', 'https://flashcards.internal')
   await expect(page.getByRole('link', { name: /Biblioteca/ })).toHaveAttribute('href', 'https://biblioteca.internal')
