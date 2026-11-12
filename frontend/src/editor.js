@@ -7,8 +7,11 @@ import { TextSelection } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
 
 // Troca o parágrafo do cursor por um toggle aberto: o texto vira o título e o cursor fica nele.
+// Texto e título são as linhas "soltas": viram toggle, recebem o menu do "/".
+export const linhaSolta = (no) => no.type.name === 'paragraph' || no.type.name === 'heading'
+
 function podeVirarToggle($from) {
-  if ($from.parent.type.name !== 'paragraph') return false
+  if (!linhaSolta($from.parent)) return false
   const indice = $from.index(-1)
   return $from.node(-1).canReplaceWith(indice, indice + 1, $from.doc.type.schema.nodes.details)
 }
@@ -139,6 +142,20 @@ const TrocaDeLista = Extension.create({
   },
 })
 
+// Backspace no começo de um título volta a ser texto, como no Notion.
+const TituloVoltaATexto = Extension.create({
+  name: 'tituloVoltaATexto',
+  addKeyboardShortcuts() {
+    return {
+      Backspace: ({ editor }) => {
+        const { empty, $from } = editor.state.selection
+        if (!empty || $from.parent.type.name !== 'heading' || $from.parentOffset !== 0) return false
+        return editor.commands.setParagraph()
+      },
+    }
+  },
+})
+
 // Enquanto o menu do "/" está aberto, as setas, o Enter e o Esc são dele.
 export function teclasDoMenu(menu) {
   return Extension.create({
@@ -160,7 +177,7 @@ export function teclasDoMenu(menu) {
 export function extensoes(menu) {
   return [
     StarterKit.configure({
-      heading: false,
+      heading: { levels: [1] }, // um nível só; "# " no começo da linha
       blockquote: false,
       codeBlock: false,
       code: false,
@@ -175,9 +192,11 @@ export function extensoes(menu) {
     ConteudoDoToggle,
     Placeholder.configure({
       includeChildren: true,
-      placeholder: ({ node }) => (node.type.name === 'detailsSummary' ? 'Toggle' : 'Escreva, ou digite / para escolher um bloco'),
+      placeholder: ({ node }) =>
+        ({ detailsSummary: 'Toggle', heading: 'Título' })[node.type.name] ?? 'Escreva, ou digite / para escolher um bloco',
     }),
     TrocaDeLista,
+    TituloVoltaATexto,
     teclasDoMenu(menu),
   ]
 }
@@ -185,6 +204,7 @@ export function extensoes(menu) {
 // O que o menu do "/" oferece. Os atalhos são os mesmos do Notion.
 export const BLOCOS = [
   { id: 'texto', nome: 'Texto', atalho: '' },
+  { id: 'titulo', nome: 'Título', atalho: '#' },
   { id: 'lista', nome: 'Lista', atalho: '-' },
   { id: 'checklist', nome: 'Checklist', atalho: '[]' },
   { id: 'toggle', nome: 'Toggle', atalho: '>' },
@@ -204,12 +224,15 @@ export function aplicarBloco(editor, id) {
     else if (editor.isActive('bulletList')) c = c.toggleBulletList()
     return c
   }
-  if (id === 'texto') sairDaLista(editor.chain().focus()).run()
-  else if (id === 'lista' && !editor.isActive('bulletList')) {
+  if (id === 'texto') sairDaLista(editor.chain().focus()).setParagraph().run()
+  else if (id === 'titulo') {
     sairDaLista(editor.chain().focus()).run()
+    editor.chain().focus().setHeading({ level: 1 }).run()
+  } else if (id === 'lista' && !editor.isActive('bulletList')) {
+    sairDaLista(editor.chain().focus()).setParagraph().run()
     editor.chain().focus().toggleBulletList().run()
   } else if (id === 'checklist' && !editor.isActive('taskList')) {
-    sairDaLista(editor.chain().focus()).run()
+    sairDaLista(editor.chain().focus()).setParagraph().run()
     editor.chain().focus().toggleTaskList().run()
   }
   else if (id === 'toggle') {

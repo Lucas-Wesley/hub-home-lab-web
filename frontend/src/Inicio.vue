@@ -2,7 +2,7 @@
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { computed, inject, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { api } from './api.js'
-import { aplicarBloco, extensoes, filtrarBlocos } from './editor.js'
+import { aplicarBloco, extensoes, filtrarBlocos, linhaSolta } from './editor.js'
 
 // Início: a página inteira é o campo de texto, como no Notion. Salva sozinha, pouco depois de parar de digitar.
 const recado = inject('recado')
@@ -26,7 +26,7 @@ function escolher(bloco = opcoes.value[menu.indice]) {
 // Abre o menu quando o texto antes do cursor termina em "/palavra" (no começo ou depois de um espaço).
 function conferirBarra(ed) {
   const { empty, $from } = ed.state.selection
-  if (!empty || $from.parent.type.name !== 'paragraph') return fecharMenu()
+  if (!empty || !linhaSolta($from.parent)) return fecharMenu()
   const antes = $from.parent.textBetween(0, $from.parentOffset, undefined, '￼')
   const achado = antes.match(/(?:^|\s)\/([\p{L}]{0,12})$/u)
   if (!achado || !filtrarBlocos(achado[1]).length) return fecharMenu()
@@ -181,6 +181,20 @@ onBeforeUnmount(() => {
 .folha :deep(p) {
   margin: 0;
   padding: 2px 0;
+}
+
+/* Título: um nível só, para separar os assuntos da página. */
+.folha :deep(h1) {
+  margin: 0;
+  padding: 18px 0 4px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.folha :deep(.ProseMirror > h1:first-child) {
+  padding-top: 2px;
 }
 
 /* O texto fraco de exemplo aparece só na linha vazia onde está o cursor. */

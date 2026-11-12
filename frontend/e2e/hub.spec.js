@@ -10,7 +10,9 @@ test('abre no Início: a página é o campo, com texto, checklist, lista e toggl
   await expect(folha).toHaveAttribute('contenteditable', 'true')
   await folha.click()
 
-  // Texto, depois os atalhos do Notion: "[] " checklist e "- " lista.
+  // Título ("# "), texto, depois os atalhos do Notion: "[] " checklist e "- " lista.
+  await page.keyboard.type('# Casa')
+  await page.keyboard.press('Enter')
   await page.keyboard.type('Compras da semana')
   await page.keyboard.press('Enter')
   await page.keyboard.type('[] Pão')
@@ -35,6 +37,17 @@ test('abre no Início: a página é o campo, com texto, checklist, lista e toggl
   await page.keyboard.press('Enter')
   await page.keyboard.type('Reservar hotel')
 
+  // Título também pelo menu do "/".
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('/tit')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Trabalho')
+  await expect(folha.getByRole('heading', { name: 'Casa' })).toBeVisible()
+  await expect(folha.getByRole('heading', { name: 'Trabalho' })).toBeVisible()
+  await expect(folha.locator('[data-type="details"]').getByRole('heading')).toHaveCount(0)
+
   const tarefas = folha.locator('li[data-checked]')
   await expect(tarefas).toHaveCount(3)
   await tarefas.first().getByRole('checkbox').check()
@@ -54,6 +67,7 @@ test('abre no Início: a página é o campo, com texto, checklist, lista e toggl
   await page.waitForTimeout(1000)
   await page.reload()
   await expect(folha.getByText('Compras da semana')).toBeVisible()
+  await expect(folha.getByRole('heading', { name: 'Trabalho' })).toBeVisible()
   await expect(folha.locator('li[data-checked="true"]', { hasText: 'Pão' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Abrir o toggle' })).toBeVisible()
   await expect(folha.getByText('Passagem')).toBeHidden()

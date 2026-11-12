@@ -22,8 +22,8 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
   - os contêineres Docker.
 - **Limpeza:** apaga o cache de build e as imagens soltas do Docker, agora ou por agenda (a cada
   1, 2, 3, 7, 14 ou 30 dias, numa hora escolhida), e guarda o histórico.
-- **Início:** a tela de abertura, uma página de anotações como no Notion: texto, lista, checklist e
-  toggle (H13).
+- **Início:** a tela de abertura, uma página de anotações como no Notion: texto, título, lista,
+  checklist e toggle (H13).
 - **Aplicações:** o link de cada app pelo nome `.internal` e como instalá-lo no celular (H12).
 - **Ajustes:** Sugestões de melhoria, com a API comum (`/api/sugestoes`).
 - **Vigia:** avisa no celular, pelo ntfy, disco cheio, contêiner parado e backup atrasado (H9).
@@ -239,11 +239,12 @@ Com o item 3 do `SUGESTOES.md` (nomes em vez de IP), cada app ganhou um nome: `b
 O Lucas quis um primeiro item no menu, "Início", em que a página inteira é o campo de texto: sem caixa,
 sem botão de salvar.
 
-- **O que tem, por enquanto:** texto, lista com pontinhos, checklist (marcado fica riscado) e toggle,
+- **O que tem, por enquanto:** texto, título (um nível só, 12/11: `# `; Backspace no começo volta a
+  ser texto), lista com pontinhos, checklist (marcado fica riscado) e toggle,
   que abre e fecha e aceita listas dentro. Os atalhos são os do Notion, no começo da linha: `- ` lista,
   `[] ` checklist, `> ` toggle; dentro de uma lista, `- ` e `[] ` trocam o tipo só da linha. Enter numa
-  linha vazia sai da lista ou do toggle. Digitar `/` abre um menu com os quatro, porque no teclado do
-  Android os atalhos às vezes falham. Título, negrito pelo menu, lista numerada e várias páginas ficam
+  linha vazia sai da lista ou do toggle. Digitar `/` abre um menu com os cinco, porque no teclado do
+  Android os atalhos às vezes falham. Mais níveis de título, negrito pelo menu, lista numerada e várias páginas ficam
   para depois.
 - **Editor:** Tiptap 3 (ProseMirror), em `frontend/src/editor.js`. O desenho do toggle é nosso: o do
   Tiptap guarda o aberto/fechado também no DOM e às vezes nascia fechado; o nosso lê só o atributo
