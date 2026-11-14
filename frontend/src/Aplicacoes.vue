@@ -6,6 +6,7 @@ const APPS = [
   { nome: 'Acervo', endereco: 'https://acervo.internal', descricao: 'A base de conhecimento: Temas, Referências e resumos.', icone: true },
   { nome: 'Flashcards', endereco: 'https://flashcards.internal', descricao: 'Os baralhos e a revisão do dia.', icone: true },
   { nome: 'Streaming', endereco: 'https://streaming.internal', descricao: 'Canais, filmes e séries, com o celular de controle remoto.', icone: true },
+  { nome: 'Trilha de Estudo', endereco: 'https://trilha.internal', descricao: 'Trilhas de estudo em ordem, com lições, meta e progresso.', icone: true },
 ]
 
 const SERVIDOR = [
