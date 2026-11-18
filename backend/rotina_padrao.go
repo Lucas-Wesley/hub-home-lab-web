@@ -4,25 +4,25 @@ import "fmt"
 
 // rotinaPadrao: a rotina com que a tela nasce, montada a partir do rascunho do caderno do Lucas
 // (18/11/2026). Trabalho 8–12 e 14–18; Muay Thai seg, qua e sex; academia ter, qui e sáb; futebol
-// ter às 19h30; quarta e sexta à noite com a namorada; sábado para mercado e comida da semana;
+// ter às 19h30 (fixo: não remarca, então não avisa falta); quarta e sexta à noite com a namorada; sábado para mercado e comida da semana;
 // domingo livre, com o planejamento da semana à noite. Sono de ~7 h (23h30–6h30).
 func rotinaPadrao() configRotina {
 	atividades := []atividade{
-		{"ingles", "Inglês", "azul", 7, 7, 1},
-		{"trabalho", "Trabalho", "cinza", 0, 0, 1},
-		{"programacao", "Programação", "violeta", 3, 4, 1},
-		{"comida", "Preparar comida", "amarelo", 1, 1, 1},
-		{"planejar", "Planejar a semana", "turquesa", 1, 1, 1},
-		{"namorada", "Namorada", "rosa", 0, 0, 1},
-		{"muaythai", "Muay Thai", "laranja", 2, 3, 2},
-		{"academia", "Academia", "laranja", 2, 3, 2},
-		{"futebol", "Futebol", "laranja", 1, 1, 2},
-		{"leitura", "Leitura", "verde", 5, 7, 2},
-		{"mercado", "Mercado", "amarelo", 1, 1, 2},
-		{"portugues", "Português", "turquesa", 2, 2, 3},
-		{"filme", "Filme", "rosa", 1, 2, 3},
-		{"almoco", "Almoço", "cinza", 0, 0, 3},
-		{"casa", "Banho, janta e casa", "cinza", 0, 0, 3},
+		{"ingles", "Inglês", "azul", 7, 7, 1, false},
+		{"trabalho", "Trabalho", "cinza", 0, 0, 1, false},
+		{"programacao", "Programação", "violeta", 3, 4, 1, false},
+		{"comida", "Preparar comida", "amarelo", 1, 1, 1, false},
+		{"planejar", "Planejar a semana", "turquesa", 1, 1, 1, false},
+		{"namorada", "Namorada", "rosa", 0, 0, 1, false},
+		{"muaythai", "Muay Thai", "laranja", 2, 3, 2, false},
+		{"academia", "Academia", "laranja", 2, 3, 2, false},
+		{"futebol", "Futebol", "laranja", 1, 1, 2, true},
+		{"leitura", "Leitura", "verde", 5, 7, 2, false},
+		{"mercado", "Mercado", "amarelo", 1, 1, 2, false},
+		{"portugues", "Português", "turquesa", 2, 2, 3, false},
+		{"filme", "Filme", "rosa", 1, 2, 3, false},
+		{"almoco", "Almoço", "cinza", 0, 0, 3, false},
+		{"casa", "Banho, janta e casa", "cinza", 0, 0, 3, false},
 	}
 
 	type b struct {

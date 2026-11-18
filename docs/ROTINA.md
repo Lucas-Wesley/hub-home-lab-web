@@ -77,6 +77,21 @@ Escolhas que vale revisar com o uso:
 - [x] **Fase 1 (18/11/2026):** atividades com metas e prioridade; modelo; semanas planejadas a partir
   do modelo; mover, trocar, copiar e limpar dias; nota do dia; marcar feito; placar das metas;
   choque de horários; sono; visão do dia e da semana inteira.
+- [x] **Fase 1b (18/11/2026), pedidos do Lucas depois do primeiro uso:**
+  - **Fixa:** atividade que não dá para remarcar (o futebol de terça) não entra no aviso de falta.
+  - **Adicionar pela voz (ou escrevendo)**, no topo da Semana e do Mês: "quinta das 19 às 22, encontro
+    com amigos". O ditado é o do navegador; o Claude (conta ativa da tela Claude) entende data, horário
+    e título, e o Hub **só adiciona**: o que já estava no horário fica, e o dia ganha um **"!"** (nos
+    dias, na grade e no mês) até ser resolvido. Horário ambíguo vira o mais provável pelo contexto, e o
+    Claude diz o que presumiu.
+  - **Eventos com data** (daqui a 2 semanas, dia 10) e **tarefas sem horário**. Uma semana sem plano
+    nasce do modelo quando recebe o primeiro evento. "Refazer pelo modelo" mantém os eventos.
+  - **Lixeira** em cada item da lista do dia.
+  - **Mês:** calendário com os eventos e tarefas, o "!", as notas dos dias, "+ Evento com data" e
+    "Planejar as semanas sem plano" (pelo modelo). Tocar num dia abre a semana nele.
+  - **Sugestão da IA** em Atividades e metas: com as metas da tela, mesmo sem salvar, o Claude monta um
+    rascunho de semana (grade + metas atingidas). Dá para refazer com um comentário ("prioriza mais
+    programação") e usar como modelo.
 - [ ] **Fase 2 — lembretes:** aviso no ntfy no domingo às 20h30 se a próxima semana não foi
   planejada, e (opcional) um aviso alguns minutos antes de cada bloco. O Hub já fala com o ntfy (H9).
 - [ ] **Fase 3 — tela "Hoje":** o dia atual no Início ou no topo da Rotina, com o bloco de agora e o

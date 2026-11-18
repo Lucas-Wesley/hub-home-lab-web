@@ -72,6 +72,7 @@ type app struct {
 	avisos  *avisador       // nil sem NTFY_URL
 	adguard *clienteAdGuard // nil sem ADGUARD_SENHA
 	claude  *contasDoClaude // nil sem CLAUDE_CONTAS
+	ia      perguntador     // a IA da Rotina, com a conta ativa; nil sem CLAUDE_CONTAS
 	medidas *cacheDeMedidas
 	amostra time.Duration // intervalo mínimo entre as duas leituras do processador
 
@@ -95,6 +96,7 @@ func novoApp(db *sql.DB, fuso *time.Location, relogio func() time.Time, cfg conf
 	}
 	if cfg.claudeContas != "" {
 		a.claude = novasContasDoClaude(cfg.claudeContas, cfg.claudePrograma, cfg.claudeCasa, relogio)
+		a.ia = perguntadorDaCLI(cfg.claudePrograma, cfg.claudeCasa, arquivoDoTokenAtivo(cfg.claudeContas))
 	}
 	if err := a.criarAgenda(); err != nil {
 		return nil, err

@@ -26,6 +26,8 @@ export default defineConfig({
             `head -c 3000000 /dev/zero > "${dados}/apps/biblioteca/books/livro.epub"`,
             `head -c 200000 /dev/zero > "${dados}/apps/biblioteca/biblioteca.db"`,
             `head -c 900000 /dev/zero > "${dados}/apps/acervo/home/.claude/projects/a.jsonl"`,
+            // A conta ativa do Claude (tela Claude, H11), para a IA da Rotina falar com o Claude falso.
+            `mkdir -p "${dados}/claude/ativa" && echo token-falso > "${dados}/claude/ativa/token"`,
             'go run .',
           ].join(' && '),
           cwd: '../backend',
@@ -36,6 +38,8 @@ export default defineConfig({
             PROC_DIR: path.join(testdata, 'proc'),
             CGROUP_DIR: path.join(testdata, 'cgroup'),
             DOCKER_URL: 'http://127.0.0.1:8097',
+            CLAUDE_CONTAS: path.join(dados, 'claude'),
+            CLAUDE_BIN: path.join(testdata, 'claude-falso.py'),
             ADDR: ':8096',
           },
           url: 'http://localhost:8096/api/health',

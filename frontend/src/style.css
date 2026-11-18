@@ -438,3 +438,14 @@ a {
   width: 18px;
   height: 18px;
 }
+
+/* Rotina (H14): a cor de cada atividade vira --cor; o evento com nome livre usa a cor do app. */
+.cor-azul { --cor: var(--r-azul); }
+.cor-violeta { --cor: var(--r-violeta); }
+.cor-verde { --cor: var(--r-verde); }
+.cor-laranja { --cor: var(--r-laranja); }
+.cor-amarelo { --cor: var(--r-amarelo); }
+.cor-rosa { --cor: var(--r-rosa); }
+.cor-turquesa { --cor: var(--r-turquesa); }
+.cor-cinza { --cor: var(--r-cinza); }
+.cor-evento { --cor: var(--marca); }

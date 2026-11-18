@@ -15,6 +15,23 @@ defineProps({ nome: { type: String, required: true } })
     <template v-else-if="nome === 'inicio'">
       <path d="M4.5 10.5 12 4.5l7.5 6V19a1 1 0 01-1 1h-4v-5.5h-5V20h-4a1 1 0 01-1-1z" />
     </template>
+    <template v-else-if="nome === 'microfone'">
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v2.5" />
+    </template>
+    <rect v-else-if="nome === 'parar'" x="7" y="7" width="10" height="10" rx="2" />
+    <template v-else-if="nome === 'lixeira'">
+      <path d="M5 7h14M10 7V5h4v2M7 7l.8 12a1 1 0 001 1h6.4a1 1 0 001-1L17 7M10.5 11v5M13.5 11v5" />
+    </template>
+    <template v-else-if="nome === 'alerta'">
+      <path d="M12 4.5 20.5 19h-17z" />
+      <path d="M12 10v4M12 16.5h.01" />
+    </template>
+    <template v-else-if="nome === 'faisca'">
+      <path d="M12 4l1.8 4.7L18.5 10.5l-4.7 1.8L12 17l-1.8-4.7-4.7-1.8 4.7-1.8z" />
+      <path d="M18 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+    </template>
+    <path v-else-if="nome === 'enviar'" d="M5 12h13M13 6l6 6-6 6" />
     <template v-else-if="nome === 'rotina'">
       <rect x="4" y="5.5" width="16" height="14.5" rx="2" />
       <path d="M8 3.5v4M16 3.5v4M4 10h16M8 14h3M8 17h6" />

@@ -88,9 +88,9 @@ test('Rotina: planeja a semana pelo modelo, remaneja um bloco, marca feito e vê
   await expect(page.locator('.meta', { hasText: 'Inglês' }).getByText('1 feita')).toBeVisible()
 
   // Remanejar: a programação da segunda vai para domingo.
-  await page.locator('.bloco', { hasText: 'Programação' }).getByRole('button').click()
+  await page.locator('.bloco', { hasText: 'Programação' }).locator('.corpo').click()
   const folha = page.getByRole('form', { name: 'Editar bloco' })
-  await folha.getByRole('combobox').nth(1).selectOption({ index: 6 })
+  await folha.getByLabel('Dia', { exact: true }).selectOption({ index: 6 })
   await folha.getByRole('button', { name: 'Salvar' }).click()
   await expect(page.getByRole('heading', { name: /^Domingo/ })).toBeVisible()
   await expect(page.locator('.bloco', { hasText: 'Programação' })).toBeVisible()
@@ -116,6 +116,74 @@ test('Rotina: planeja a semana pelo modelo, remaneja um bloco, marca feito e vê
   await expect(page.getByRole('heading', { name: 'Metas do modelo' })).toBeVisible()
   await page.getByRole('tab', { name: 'Atividades e metas' }).click()
   await expect(page.getByLabel('Nome da atividade').first()).toHaveValue('Inglês')
+})
+
+test('Rotina: adiciona pela fala sem tirar nada, avisa o choque com "!", apaga pela lixeira e não cobra o futebol', async ({ page }) => {
+  await page.goto('/#/rotina')
+  // O futebol é fixo: mesmo fora da semana, não entra no aviso de falta.
+  await page.getByRole('tab', { name: 'Modelo' }).click()
+  await page.getByRole('tab', { name: 'Terça' }).click()
+  page.once('dialog', (d) => d.accept())
+  await page.getByRole('button', { name: 'Limpar o dia' }).click()
+  await expect(page.locator('.aviso.erro', { hasText: 'Faltam' })).toBeVisible()
+  await expect(page.locator('.aviso.erro', { hasText: 'Futebol' })).toHaveCount(0)
+  await expect(page.locator('.meta', { hasText: 'Futebol' }).getByText('0 de 1× · fixa')).toBeVisible()
+
+  // A fala vira um evento na próxima quinta, das 7h às 10h: choca com o inglês e o trabalho.
+  await page.getByRole('tab', { name: 'Semana', exact: true }).click()
+  await page.getByLabel('Adicionar à rotina').fill('quinta das 7 às 10 encontro com amigos')
+  await page.getByRole('button', { name: 'Adicionar', exact: true }).click()
+  const resultado = page.getByRole('status').filter({ hasText: 'Adicionado' })
+  await expect(resultado).toContainText('Encontro com amigos')
+  await expect(resultado).toContainText('No mesmo horário de Inglês, Trabalho')
+  await expect(page.getByRole('heading', { name: /^Quinta/ })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Quinta, com choque de horário' })).toBeVisible()
+  await expect(page.locator('.bloco.conflito', { hasText: 'Encontro com amigos' })).toBeVisible()
+
+  // A lixeira resolve: some o evento e o "!".
+  await page.getByRole('button', { name: 'Apagar Encontro com amigos' }).click()
+  await expect(page.locator('.bloco', { hasText: 'Encontro com amigos' })).toHaveCount(0)
+  await expect(page.getByRole('tab', { name: 'Quinta', exact: true })).toBeVisible()
+})
+
+test('Rotina: mês com evento de data marcada e semanas planejadas pelo modelo', async ({ page }) => {
+  await page.goto('/#/rotina')
+  await page.getByRole('tab', { name: 'Mês' }).click()
+  await page.getByRole('button', { name: 'Próximo mês' }).click()
+  await page.getByRole('button', { name: '+ Evento com data' }).click()
+  const folha = page.getByRole('form', { name: 'Novo evento' })
+  await folha.getByLabel('Nome do evento').fill('Dentista')
+  const data = await folha.getByLabel('Data').inputValue()
+  await folha.getByLabel('Data').fill(data.slice(0, 8) + '10')
+  await folha.getByLabel('Começa').fill('16:00')
+  await folha.getByLabel('Termina').fill('17:00')
+  await folha.getByRole('button', { name: 'Adicionar' }).click()
+  await expect(page.locator('.celula .evento', { hasText: 'Dentista' })).toBeVisible()
+
+  const planejar = page.getByRole('button', { name: /Planejar .*sem plano/ })
+  await planejar.click()
+  await expect(planejar).toHaveCount(0)
+
+  // Tocar no dia abre a semana nele.
+  await page.locator('.celula', { has: page.locator('.evento', { hasText: 'Dentista' }) }).click()
+  await expect(page.locator('.bloco', { hasText: 'Dentista' })).toBeVisible()
+})
+
+test('Rotina: sugestão da IA antes de salvar, refeita com comentário e usada como modelo', async ({ page }) => {
+  await page.goto('/#/rotina')
+  await page.getByRole('tab', { name: 'Atividades e metas' }).click()
+  await page.getByRole('button', { name: 'Ver a semana sugerida' }).click()
+  await expect(page.getByText('Inglês todo dia e programação 1x.')).toBeVisible()
+  await expect(page.locator('.sugestao .pedaco')).toHaveCount(8)
+
+  await page.getByPlaceholder(/prioriza mais programação/).fill('prioriza mais programação')
+  await page.getByRole('button', { name: 'Refazer com o comentário' }).click()
+  await expect(page.getByText('Inglês todo dia e programação 3x.')).toBeVisible()
+
+  page.once('dialog', (d) => d.accept())
+  await page.getByRole('button', { name: 'Usar como modelo' }).click()
+  await expect(page.getByRole('heading', { name: 'Metas do modelo' })).toBeVisible()
+  await expect(page.locator('.meta', { hasText: 'Programação' }).getByText('3 de 3–4×')).toBeVisible()
 })
 
 test('Aplicações tem o link de cada app pelo nome', async ({ page }) => {

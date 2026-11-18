@@ -1,6 +1,10 @@
 <script setup>
 import { computed, inject, onMounted, ref, watch } from 'vue'
+import FalarRotina from './FalarRotina.vue'
+import GradeSemana from './GradeSemana.vue'
 import Icone from './Icone.vue'
+import MesRotina from './MesRotina.vue'
+import SugestaoSemana from './SugestaoSemana.vue'
 import { api } from './api.js'
 import {
   CORES,
@@ -8,12 +12,15 @@ import {
   LETRAS,
   PRIORIDADES,
   conflitos,
+  dataCurta,
   diaDoMes,
+  diasComChoque,
   doDia,
   duracao,
   idDoNome,
   meta,
   minutos,
+  nomeDoBloco,
   novoId,
   placar,
   rotuloSemana,
@@ -21,18 +28,21 @@ import {
   sono,
 } from './rotina.js'
 
-// Rotina (H14): o modelo da semana, cada semana planejada a partir dele e as metas de cada atividade.
+// Rotina (H14): o modelo da semana, cada semana planejada a partir dele, o mês, as metas de cada
+// atividade e o que se adiciona pela voz.
 const recado = inject('recado')
 
-const cfg = ref(null) // { atividades, modelo, hoje, dia_de_hoje, semana_atual }
+const cfg = ref(null) // { atividades, modelo, hoje, dia_de_hoje, semana_atual, ia }
 const erro = ref('')
-const aba = ref('semana') // semana | modelo | atividades
+const aba = ref('semana') // semana | mes | modelo | atividades
 const visao = ref('dia') // dia | semana
 const inicio = ref('') // segunda-feira da semana aberta
 const semana = ref(null) // { inicio, planejada, blocos, notas }
 const dia = ref(0)
-const editando = ref(null) // { novo, b }
+const editando = ref(null) // { modo: 'bloco' | 'evento', novo, b, data, semHorario }
 const ocupado = ref(false)
+const adicionados = ref(null) // o último resultado da voz ou do "+ Evento"
+const versaoDoMes = ref(0)
 
 async function carregar() {
   try {
@@ -46,7 +56,6 @@ async function carregar() {
 }
 
 async function carregarSemana() {
-  semana.value = null
   try {
     semana.value = await api(`/api/rotina/semanas/${inicio.value}`)
   } catch (e) {
@@ -54,29 +63,35 @@ async function carregarSemana() {
   }
 }
 
-function mudarSemana(n) {
-  inicio.value = somarDias(inicio.value, 7 * n)
-  dia.value = inicio.value === cfg.value.semana_atual ? cfg.value.dia_de_hoje : 0
+function abrirSemana(novoInicio, novoDia) {
+  aba.value = 'semana'
+  visao.value = 'dia'
+  dia.value = novoDia
+  if (novoInicio !== inicio.value) {
+    inicio.value = novoInicio
+    semana.value = null
+  }
   carregarSemana()
 }
 
-function irParaHoje() {
-  inicio.value = cfg.value.semana_atual
-  dia.value = cfg.value.dia_de_hoje
-  carregarSemana()
+function mudarSemana(n) {
+  const novo = somarDias(inicio.value, 7 * n)
+  abrirSemana(novo, novo === cfg.value.semana_atual ? cfg.value.dia_de_hoje : 0)
 }
 
 const emModelo = computed(() => aba.value === 'modelo')
 const blocos = computed(() => (emModelo.value ? cfg.value?.modelo : semana.value?.blocos) ?? [])
 const porId = computed(() => Object.fromEntries((cfg.value?.atividades ?? []).map((a) => [a.id, a])))
 const blocosDoDia = computed(() => doDia(blocos.value, dia.value))
-const idsEmConflito = computed(() => conflitos(blocos.value))
+const idsEmChoque = computed(() => conflitos(blocos.value))
+const diasEmChoque = computed(() => diasComChoque(blocos.value))
 const sonoDoDia = computed(() => {
   const seguinte = dia.value < 6 ? doDia(blocos.value, dia.value + 1) : doDia(cfg.value?.modelo ?? [], 0)
   return sono(blocosDoDia.value, seguinte)
 })
 const metas = computed(() => (cfg.value ? placar(cfg.value.atividades, blocos.value) : []))
 const faltando = computed(() => metas.value.filter((m) => m.estado === 'falta'))
+const numeros = computed(() => (emModelo.value ? null : LETRAS.map((_, d) => diaDoMes(inicio.value, d))))
 
 const relacao = computed(() => {
   if (!cfg.value) return ''
@@ -86,10 +101,10 @@ const relacao = computed(() => {
   if (inicio.value === somarDias(atual, -7)) return 'Semana passada'
   return ''
 })
-const ehHoje = (d) => !emModelo.value && inicio.value === cfg.value?.semana_atual && d === cfg.value?.dia_de_hoje
-const nomeDe = (b) => porId.value[b.atividade]?.nome ?? 'Atividade apagada'
-const corDe = (b) => porId.value[b.atividade]?.cor ?? 'cinza'
-const tempo = (b) => duracao(minutos(b.fim) - minutos(b.inicio))
+const diaDeHoje = computed(() => (!emModelo.value && inicio.value === cfg.value?.semana_atual ? cfg.value.dia_de_hoje : -1))
+const nomeDe = (b) => nomeDoBloco(b, porId.value)
+const corDe = (b) => porId.value[b.atividade]?.cor ?? (b.titulo ? 'evento' : 'cinza')
+const tempo = (b) => (b.inicio ? duracao(minutos(b.fim) - minutos(b.inicio)) : '')
 
 // ---------- Gravar ----------
 
@@ -115,7 +130,7 @@ async function gravar(novos, notas) {
 }
 
 async function planejar(refazer = false) {
-  if (refazer && !confirm('Refazer a semana pelo modelo? O que você mudou nela (e o que marcou como feito) se perde.')) return
+  if (refazer && !confirm('Refazer a semana pelo modelo? As mudanças nos blocos do modelo e o que foi marcado como feito se perdem; os eventos adicionados ficam.')) return
   ocupado.value = true
   try {
     semana.value = await api(`/api/rotina/semanas/${inicio.value}${refazer ? '?refazer=1' : ''}`, { metodo: 'POST' })
@@ -131,6 +146,23 @@ function alternarFeito(b) {
   gravar(blocos.value.map((x) => (x.id === b.id ? { ...x, feito: !x.feito } : x)))
 }
 
+async function apagar(b) {
+  if (await gravar(blocos.value.filter((x) => x.id !== b.id))) recado(`${nomeDe(b)} apagado.`)
+}
+
+// ---------- Voz e eventos com data ----------
+
+function aoAdicionar(r) {
+  adicionados.value = r
+  versaoDoMes.value++
+  if (r.eventos.length === 1 && aba.value !== 'mes') {
+    abrirSemana(r.eventos[0].semana, r.eventos[0].dia)
+  } else if (r.eventos.some((e) => e.semana === inicio.value)) {
+    carregarSemana()
+  }
+  if (!r.eventos.length) recado(r.observacao || 'Não entendi o que adicionar.', true)
+}
+
 // ---------- Editar um bloco ----------
 
 function somarHora(hhmm, min) {
@@ -139,32 +171,67 @@ function somarHora(hhmm, min) {
 }
 
 function abrirNovo() {
-  const ultimo = blocosDoDia.value.at(-1)
+  const ultimo = blocosDoDia.value.filter((b) => b.inicio).at(-1)
   const comeco = ultimo && ultimo.fim < '23:00' ? ultimo.fim : '08:00'
   editando.value = {
+    modo: 'bloco',
     novo: true,
-    b: { id: novoId(), dia: dia.value, inicio: comeco, fim: somarHora(comeco, 60), atividade: cfg.value.atividades[0].id, nota: '', feito: false },
+    semHorario: false,
+    b: { id: novoId(), dia: dia.value, inicio: comeco, fim: somarHora(comeco, 60), atividade: cfg.value.atividades[0].id, titulo: '', nota: '', feito: false, extra: !emModelo.value },
+  }
+}
+
+function abrirEvento(data) {
+  editando.value = {
+    modo: 'evento',
+    novo: true,
+    semHorario: false,
+    data,
+    b: { id: 'novo', dia: 0, inicio: '19:00', fim: '20:00', atividade: '', titulo: '', nota: '', feito: false, extra: true },
   }
 }
 
 function abrirBloco(b) {
   dia.value = b.dia
-  editando.value = { novo: false, b: { ...b } }
+  editando.value = { modo: 'bloco', novo: false, semHorario: !b.inicio, b: { titulo: '', extra: false, ...b } }
 }
 
 const erroDaEdicao = computed(() => {
-  const b = editando.value?.b
-  if (!b) return ''
-  if (!b.inicio || !b.fim) return 'Preencha o começo e o fim.'
-  if (b.fim <= b.inicio) return 'O fim precisa ser depois do começo.'
+  const e = editando.value
+  if (!e) return ''
+  if (!e.b.atividade && !e.b.titulo.trim()) return 'Dê um nome ao evento.'
+  if (e.modo === 'evento' && !e.data) return 'Escolha a data.'
+  if (e.semHorario) return ''
+  if (!e.b.inicio || !e.b.fim) return 'Preencha o começo e o fim.'
+  if (e.b.fim <= e.b.inicio) return 'O fim precisa ser depois do começo.'
   return ''
 })
 
 async function salvarEdicao() {
   if (erroDaEdicao.value) return
-  const { novo, b } = editando.value
-  const novos = novo ? [...blocos.value, b] : blocos.value.map((x) => (x.id === b.id ? b : x))
-  const mudouDeDia = !novo && blocos.value.find((x) => x.id === b.id)?.dia !== b.dia
+  const e = editando.value
+  const b = { ...e.b, titulo: e.b.atividade ? '' : e.b.titulo.trim() }
+  if (e.semHorario) b.inicio = b.fim = ''
+
+  if (e.modo === 'evento') {
+    ocupado.value = true
+    try {
+      const r = await api('/api/rotina/eventos', {
+        metodo: 'POST',
+        corpo: { eventos: [{ data: e.data, inicio: b.inicio, fim: b.fim, atividade: b.atividade, titulo: b.titulo, nota: b.nota }] },
+      })
+      editando.value = null
+      aoAdicionar(r)
+    } catch (err) {
+      recado(err.message, true)
+    } finally {
+      ocupado.value = false
+    }
+    return
+  }
+
+  const novos = e.novo ? [...blocos.value, b] : blocos.value.map((x) => (x.id === b.id ? b : x))
+  const mudouDeDia = !e.novo && blocos.value.find((x) => x.id === b.id)?.dia !== b.dia
   if (await gravar(novos)) {
     editando.value = null
     if (mudouDeDia) {
@@ -174,9 +241,10 @@ async function salvarEdicao() {
   }
 }
 
-async function apagarBloco() {
-  const id = editando.value.b.id
-  if (await gravar(blocos.value.filter((x) => x.id !== id))) editando.value = null
+async function apagarDaFolha() {
+  const b = editando.value.b
+  editando.value = null
+  await apagar(b)
 }
 
 // ---------- O dia inteiro ----------
@@ -200,11 +268,13 @@ function limparDia() {
   gravar(blocos.value.filter((b) => b.dia !== dia.value))
 }
 
-// Troca o dia aberto pelos blocos do modelo de outro dia (ou do mesmo): "a sexta de feriado como um sábado".
+// Troca o dia aberto pelos blocos do modelo de outro dia (ou do mesmo): "a sexta de feriado como um
+// sábado". Os eventos adicionados no dia ficam.
 const copiarDe = ref('')
 async function copiarDoModelo(origem) {
   const vindos = doDia(cfg.value.modelo, origem).map((b) => ({ ...b, id: novoId(), dia: dia.value, feito: false }))
-  if (await gravar([...blocos.value.filter((b) => b.dia !== dia.value), ...vindos])) {
+  const ficam = blocos.value.filter((b) => b.dia !== dia.value || (!emModelo.value && b.extra))
+  if (await gravar([...ficam, ...vindos])) {
     recado(origem === dia.value ? 'O dia voltou ao modelo.' : `${DIAS[dia.value]} agora segue o modelo de ${DIAS[origem].toLowerCase()}.`)
   }
   copiarDe.value = ''
@@ -214,36 +284,23 @@ watch(copiarDe, (v) => {
   if (v !== '') copiarDoModelo(Number(v))
 })
 
-// ---------- Visão da semana (grade) ----------
-
-const HORA_ALTURA = 30 // px por hora
-const gradeInicio = computed(() => {
-  const menor = blocos.value.reduce((m, b) => Math.min(m, minutos(b.inicio)), 6 * 60)
-  return Math.floor(menor / 60)
-})
-const horasDaGrade = computed(() => Array.from({ length: 24 - gradeInicio.value }, (_, i) => gradeInicio.value + i))
-function posicao(b) {
-  const top = ((minutos(b.inicio) - gradeInicio.value * 60) / 60) * HORA_ALTURA
-  const altura = ((minutos(b.fim) - minutos(b.inicio)) / 60) * HORA_ALTURA
-  return { top: `${top}px`, height: `${Math.max(altura - 2, 4)}px` }
-}
-
 // ---------- Atividades ----------
 
 const atividadesEdit = ref([])
 watch(aba, (v) => {
-  if (v === 'atividades') atividadesEdit.value = cfg.value.atividades.map((a) => ({ ...a }))
+  if (v === 'atividades') atividadesEdit.value = cfg.value.atividades.map((a) => ({ fixa: false, ...a }))
 })
-const atividadesMudaram = computed(() => JSON.stringify(atividadesEdit.value) !== JSON.stringify(cfg.value?.atividades))
+const atividadesMudaram = computed(() => JSON.stringify(atividadesEdit.value) !== JSON.stringify(cfg.value?.atividades.map((a) => ({ fixa: false, ...a }))))
 const noModelo = computed(() => new Set((cfg.value?.modelo ?? []).map((b) => b.atividade)))
 
 function novaAtividade() {
-  atividadesEdit.value.push({ id: '', nome: '', cor: 'azul', meta_min: 0, meta_max: 0, prioridade: 2 })
+  atividadesEdit.value.push({ id: '', nome: '', cor: 'azul', meta_min: 0, meta_max: 0, prioridade: 2, fixa: false })
 }
 
-async function salvarAtividades() {
+// As atividades da tela prontas para o servidor: números, meta coerente e id para as novas.
+const atividadesNormais = computed(() => {
   const usados = new Set(atividadesEdit.value.map((a) => a.id).filter(Boolean))
-  const lista = atividadesEdit.value
+  return atividadesEdit.value
     .filter((a) => a.id || a.nome.trim())
     .map((a) => {
       const x = { ...a, nome: a.nome.trim(), meta_min: Number(a.meta_min) || 0, meta_max: Number(a.meta_max) || 0, prioridade: Number(a.prioridade) }
@@ -254,17 +311,32 @@ async function salvarAtividades() {
       }
       return x
     })
+})
+
+async function salvarConfig(modelo, mensagem) {
   ocupado.value = true
   try {
-    const salvo = await api('/api/rotina', { metodo: 'PUT', corpo: { atividades: lista, modelo: cfg.value.modelo } })
+    const salvo = await api('/api/rotina', { metodo: 'PUT', corpo: { atividades: atividadesNormais.value, modelo } })
     cfg.value.atividades = salvo.atividades
-    atividadesEdit.value = salvo.atividades.map((a) => ({ ...a }))
-    recado('Atividades salvas.')
+    cfg.value.modelo = salvo.modelo
+    atividadesEdit.value = salvo.atividades.map((a) => ({ fixa: false, ...a }))
+    recado(mensagem)
+    return true
   } catch (e) {
     recado(e.message, true)
+    return false
   } finally {
     ocupado.value = false
   }
+}
+
+function salvarAtividades() {
+  salvarConfig(cfg.value.modelo, 'Atividades salvas.')
+}
+
+async function usarSugestao(sugeridos) {
+  if (!confirm('Trocar o modelo pela semana sugerida? As atividades da tela são salvas junto. As semanas já planejadas não mudam.')) return
+  if (await salvarConfig(sugeridos, 'A sugestão virou o modelo.')) aba.value = 'modelo'
 }
 
 onMounted(carregar)
@@ -277,10 +349,28 @@ onMounted(carregar)
     <div v-if="erro" class="aviso erro">{{ erro }}</div>
 
     <template v-if="cfg">
+      <FalarRotina v-if="cfg.ia && (aba === 'semana' || aba === 'mes')" @adicionado="aoAdicionar" />
+
+      <div v-if="adicionados?.eventos.length" class="adicionados cartao" role="status">
+        <button class="botao icone fechar" aria-label="Fechar" @click="adicionados = null"><Icone nome="fechar" /></button>
+        <p class="titulo-adicionados">{{ adicionados.eventos.length === 1 ? 'Adicionado' : `${adicionados.eventos.length} adicionados` }}</p>
+        <ul>
+          <li v-for="ev in adicionados.eventos" :key="ev.id">
+            <button class="link" @click="abrirSemana(ev.semana, ev.dia)">
+              <strong>{{ ev.nome }}</strong> · {{ dataCurta(ev.data) }}{{ ev.inicio ? `, ${ev.inicio}–${ev.fim}` : ', sem horário' }}
+            </button>
+            <span v-if="ev.choca_com.length" class="choque"><Icone nome="alerta" /> No mesmo horário de {{ ev.choca_com.join(', ') }}: resolva no dia.</span>
+            <span v-if="ev.semana_nova" class="suave pequeno"> A semana ainda não tinha plano e nasceu do modelo.</span>
+          </li>
+        </ul>
+        <p v-if="adicionados.observacao" class="suave pequeno observacao">{{ adicionados.observacao }}</p>
+      </div>
+
       <div class="pilulas abas" role="tablist" aria-label="Partes da rotina">
         <button
           v-for="[id, nome] in [
             ['semana', 'Semana'],
+            ['mes', 'Mês'],
             ['modelo', 'Modelo'],
             ['atividades', 'Atividades e metas'],
           ]"
@@ -295,14 +385,17 @@ onMounted(carregar)
         </button>
       </div>
 
+      <!-- ===== Mês ===== -->
+      <MesRotina v-if="aba === 'mes'" :cfg="cfg" :por-id="porId" :versao="versaoDoMes" @abrir="(x) => abrirSemana(x.inicio, x.dia)" @novo="abrirEvento" />
+
       <!-- ===== Semana e modelo ===== -->
-      <template v-if="aba !== 'atividades'">
+      <template v-else-if="aba === 'semana' || aba === 'modelo'">
         <div v-if="aba === 'semana'" class="navegar">
           <button class="botao icone" aria-label="Semana anterior" @click="mudarSemana(-1)"><Icone nome="voltar" /></button>
           <div class="qual">
             <strong>{{ rotuloSemana(inicio) }}</strong>
             <span v-if="relacao" class="chip">{{ relacao }}</span>
-            <button v-else class="botao pequeno-botao" @click="irParaHoje">Ir para hoje</button>
+            <button v-else class="botao pequeno-botao" @click="abrirSemana(cfg.semana_atual, cfg.dia_de_hoje)">Ir para hoje</button>
           </div>
           <button class="botao icone" aria-label="Próxima semana" @click="mudarSemana(1)"><Icone nome="avancar" /></button>
         </div>
@@ -329,22 +422,23 @@ onMounted(carregar)
               :key="d"
               role="tab"
               class="dia"
-              :class="{ ativo: dia === d, hoje: ehHoje(d) }"
+              :class="{ ativo: dia === d, hoje: diaDeHoje === d }"
               :aria-selected="dia === d"
-              :aria-label="DIAS[d]"
+              :aria-label="DIAS[d] + (diasEmChoque.has(d) ? ', com choque de horário' : '')"
               @click="dia = d"
             >
               <span class="letra">{{ letra }}</span>
-              <span v-if="!emModelo" class="numero">{{ diaDoMes(inicio, d) }}</span>
-              <span v-if="!emModelo && semana.notas[d]" class="ponto" aria-hidden="true" />
+              <span v-if="numeros" class="numero">{{ numeros[d] }}</span>
+              <span v-if="diasEmChoque.has(d)" class="alerta" aria-hidden="true">!</span>
+              <span v-else-if="!emModelo && semana.notas[d]" class="ponto" aria-hidden="true" />
             </button>
           </div>
 
           <!-- ===== Um dia ===== -->
           <section v-if="visao === 'dia'" class="um-dia">
             <div class="cabeca-dia">
-              <h2>{{ DIAS[dia] }}<span v-if="!emModelo">, {{ diaDoMes(inicio, dia) }}</span></h2>
-              <span v-if="ehHoje(dia)" class="chip ok">Hoje</span>
+              <h2>{{ DIAS[dia] }}<span v-if="numeros">, {{ numeros[dia] }}</span></h2>
+              <span v-if="diaDeHoje === dia" class="chip ok">Hoje</span>
             </div>
             <input
               v-if="!emModelo"
@@ -355,20 +449,26 @@ onMounted(carregar)
               maxlength="120"
               @change="salvarNota"
             />
+            <p v-if="diasEmChoque.has(dia)" class="aviso erro choque-dia">
+              <Icone nome="alerta" /> Tem coisas no mesmo horário (em vermelho). Mova, encurte ou apague uma delas.
+            </p>
 
             <ul v-if="blocosDoDia.length" class="lista blocos">
-              <li v-for="b in blocosDoDia" :key="b.id" class="bloco" :class="[`cor-${corDe(b)}`, { feito: b.feito, conflito: idsEmConflito.has(b.id) }]">
+              <li v-for="b in blocosDoDia" :key="b.id" class="bloco" :class="[`cor-${corDe(b)}`, { feito: b.feito, conflito: idsEmChoque.has(b.id) }]">
                 <label v-if="!emModelo" class="marcar" :title="b.feito ? 'Desmarcar' : 'Marcar como feito'">
                   <input type="checkbox" :checked="b.feito" :aria-label="`${nomeDe(b)} feito`" @change="alternarFeito(b)" />
                 </label>
                 <button class="corpo" @click="abrirBloco(b)">
-                  <span class="horario"><span>{{ b.inicio }}</span><span class="ate">–{{ b.fim }}</span></span>
+                  <span v-if="b.inicio" class="horario"><span>{{ b.inicio }}</span><span class="ate">–{{ b.fim }}</span></span>
+                  <span v-else class="horario tarefa">Tarefa</span>
                   <span class="texto">
                     <span class="nome">{{ nomeDe(b) }}</span>
                     <span v-if="b.nota" class="nota">{{ b.nota }}</span>
                   </span>
                   <span class="duracao">{{ tempo(b) }}</span>
-                  <span v-if="idsEmConflito.has(b.id)" class="chip erro">Choca</span>
+                </button>
+                <button class="botao icone lixeira" :aria-label="`Apagar ${nomeDe(b)}`" title="Apagar" :disabled="ocupado" @click="apagar(b)">
+                  <Icone nome="lixeira" />
                 </button>
               </li>
             </ul>
@@ -389,35 +489,16 @@ onMounted(carregar)
           </section>
 
           <!-- ===== Semana inteira ===== -->
-          <section v-else class="grade-semana" aria-label="Semana inteira">
-            <div class="grade" :style="{ '--hora': `${HORA_ALTURA}px`, '--horas': horasDaGrade.length }">
-              <div class="coluna-horas">
-                <div class="topo-coluna" />
-                <div class="corpo-coluna">
-                  <span v-for="h in horasDaGrade" :key="h" class="hora">{{ String(h).padStart(2, '0') }}</span>
-                </div>
-              </div>
-              <div v-for="(letra, d) in LETRAS" :key="d" class="coluna" :class="{ hoje: ehHoje(d) }">
-                <button class="topo-coluna" :title="DIAS[d]" @click="(dia = d), (visao = 'dia')">
-                  {{ letra }}<template v-if="!emModelo"> {{ diaDoMes(inicio, d) }}</template>
-                  <span v-if="!emModelo && semana.notas[d]" class="ponto" :title="semana.notas[d]" />
-                </button>
-                <div class="corpo-coluna">
-                  <button
-                    v-for="b in doDia(blocos, d)"
-                    :key="b.id"
-                    class="pedaco"
-                    :class="[`cor-${corDe(b)}`, { feito: b.feito, conflito: idsEmConflito.has(b.id) }]"
-                    :style="posicao(b)"
-                    :title="`${nomeDe(b)} · ${b.inicio}–${b.fim}`"
-                    @click="abrirBloco(b)"
-                  >
-                    {{ nomeDe(b) }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
+          <GradeSemana
+            v-else
+            :blocos="blocos"
+            :por-id="porId"
+            :numeros="numeros"
+            :notas="emModelo ? {} : semana.notas"
+            :hoje="diaDeHoje"
+            @bloco="abrirBloco"
+            @dia="(d) => ((dia = d), (visao = 'dia'))"
+          />
 
           <!-- ===== Metas ===== -->
           <h2 class="rotulo">Metas {{ emModelo ? 'do modelo' : 'da semana' }}</h2>
@@ -430,7 +511,7 @@ onMounted(carregar)
               <span class="nome">{{ m.atividade.nome }}</span>
               <span class="suave pequeno">{{ duracao(m.tempo || 0) }}</span>
               <span class="chips">
-                <span class="chip" :class="{ erro: m.estado === 'falta', ok: m.estado === 'ok' }">{{ m.planejados }} de {{ meta(m.atividade) }}</span>
+                <span class="chip" :class="{ erro: m.estado === 'falta', ok: m.estado === 'ok' }">{{ m.planejados }} de {{ meta(m.atividade) }}{{ m.estado === 'fixa' ? ' · fixa' : '' }}</span>
                 <span v-if="!emModelo && m.feitos" class="chip ok">{{ m.feitos }} {{ m.feitos === 1 ? 'feita' : 'feitas' }}</span>
               </span>
             </li>
@@ -445,7 +526,8 @@ onMounted(carregar)
       <!-- ===== Atividades ===== -->
       <template v-else>
         <p class="descricao-da-pagina modelo-texto">
-          A meta é quantas vezes por semana. A prioridade diz o que fica quando a semana aperta: alta primeiro.
+          A meta é quantas vezes por semana. A prioridade diz o que fica quando a semana aperta: alta primeiro. Fixa é o que não dá para remarcar (o futebol de
+          terça): se não acontecer, não aparece como falta.
         </p>
         <ul class="lista atividades">
           <li v-for="(a, i) in atividadesEdit" :key="a.id || `nova-${i}`" class="atividade" :class="`cor-${a.cor}`">
@@ -459,7 +541,7 @@ onMounted(carregar)
                 aria-label="Apagar atividade"
                 @click="atividadesEdit.splice(i, 1)"
               >
-                <Icone nome="fechar" />
+                <Icone nome="lixeira" />
               </button>
             </div>
             <div class="linha-campos">
@@ -485,6 +567,7 @@ onMounted(carregar)
               <select v-model.number="a.prioridade" class="campo prioridade" aria-label="Prioridade">
                 <option v-for="(nome, p) in PRIORIDADES" :key="p" :value="Number(p)">{{ nome }}</option>
               </select>
+              <label class="marcar-fixa"><input v-model="a.fixa" type="checkbox" /> Fixa</label>
             </div>
           </li>
         </ul>
@@ -492,46 +575,64 @@ onMounted(carregar)
           <button class="botao" @click="novaAtividade">+ Atividade</button>
           <button class="botao principal" :disabled="!atividadesMudaram || ocupado" @click="salvarAtividades">Salvar</button>
         </div>
+
+        <SugestaoSemana :atividades="atividadesNormais" :ligada="cfg.ia" @usar="usarSugestao" />
       </template>
     </template>
 
-    <!-- ===== Folha de edição de um bloco ===== -->
+    <!-- ===== Folha: editar um bloco ou criar um evento com data ===== -->
     <Transition name="folha">
       <div v-if="editando" class="veu" @click.self="editando = null">
-        <form class="folha vidro" :aria-label="editando.novo ? 'Novo bloco' : 'Editar bloco'" @submit.prevent="salvarEdicao">
-          <h2>{{ editando.novo ? 'Novo bloco' : 'Editar bloco' }}</h2>
+        <form
+          class="folha vidro"
+          :aria-label="editando.modo === 'evento' ? 'Novo evento' : editando.novo ? 'Novo bloco' : 'Editar bloco'"
+          @submit.prevent="salvarEdicao"
+        >
+          <h2>{{ editando.modo === 'evento' ? 'Novo evento' : editando.novo ? 'Novo bloco' : 'Editar bloco' }}</h2>
           <label>
-            <span class="rotulo-campo">Atividade</span>
-            <select v-model="editando.b.atividade" class="campo">
+            <span class="rotulo-campo">O quê</span>
+            <select v-model="editando.b.atividade" class="campo" aria-label="Atividade">
+              <option v-if="!emModelo" value="">Outro: um evento com nome</option>
               <option v-for="a in cfg.atividades" :key="a.id" :value="a.id">{{ a.nome }}</option>
-              <option v-if="!porId[editando.b.atividade]" :value="editando.b.atividade">Atividade apagada</option>
+              <option v-if="editando.b.atividade && !porId[editando.b.atividade]" :value="editando.b.atividade">Atividade apagada</option>
             </select>
           </label>
-          <label>
+          <label v-if="!editando.b.atividade">
+            <span class="rotulo-campo">Nome</span>
+            <input v-model="editando.b.titulo" class="campo" maxlength="80" placeholder="Encontro com amigos" aria-label="Nome do evento" />
+          </label>
+          <label v-if="editando.modo === 'evento'">
+            <span class="rotulo-campo">Data</span>
+            <input v-model="editando.data" type="date" class="campo" aria-label="Data" required />
+          </label>
+          <label v-else>
             <span class="rotulo-campo">Dia</span>
-            <select v-model.number="editando.b.dia" class="campo">
-              <option v-for="(nome, d) in DIAS" :key="d" :value="d">{{ nome }}<template v-if="!emModelo">, {{ diaDoMes(inicio, d) }}</template></option>
+            <select v-model.number="editando.b.dia" class="campo" aria-label="Dia">
+              <option v-for="(nome, d) in DIAS" :key="d" :value="d">{{ nome }}<template v-if="numeros">, {{ numeros[d] }}</template></option>
             </select>
           </label>
-          <div class="horas">
+          <label v-if="!emModelo" class="marcar-fixa">
+            <input v-model="editando.semHorario" type="checkbox" /> Sem horário (tarefa do dia)
+          </label>
+          <div v-if="!editando.semHorario" class="horas">
             <label>
               <span class="rotulo-campo">Começa</span>
-              <input v-model="editando.b.inicio" type="time" step="300" class="campo" required />
+              <input v-model="editando.b.inicio" type="time" step="300" class="campo" aria-label="Começa" />
             </label>
             <label>
               <span class="rotulo-campo">Termina</span>
-              <input v-model="editando.b.fim" type="time" step="300" class="campo" required />
+              <input v-model="editando.b.fim" type="time" step="300" class="campo" aria-label="Termina" />
             </label>
           </div>
           <label>
             <span class="rotulo-campo">Nota</span>
-            <input v-model="editando.b.nota" class="campo" maxlength="300" placeholder="Opcional" />
+            <input v-model="editando.b.nota" class="campo" maxlength="300" placeholder="Opcional" aria-label="Nota" />
           </label>
           <p v-if="erroDaEdicao" class="erro-texto">{{ erroDaEdicao }}</p>
           <div class="linha-acoes">
-            <button class="botao principal" :disabled="!!erroDaEdicao || ocupado">Salvar</button>
+            <button class="botao principal" :disabled="!!erroDaEdicao || ocupado">{{ editando.modo === 'evento' ? 'Adicionar' : 'Salvar' }}</button>
             <button type="button" class="botao" @click="editando = null">Cancelar</button>
-            <button v-if="!editando.novo" type="button" class="botao perigo apagar" :disabled="ocupado" @click="apagarBloco">Apagar</button>
+            <button v-if="!editando.novo" type="button" class="botao perigo apagar" :disabled="ocupado" @click="apagarDaFolha">Apagar</button>
           </div>
         </form>
       </div>
@@ -556,6 +657,65 @@ onMounted(carregar)
 
 .modelo-texto {
   margin: 0 0 16px;
+}
+
+/* Resultado da voz */
+.adicionados {
+  position: relative;
+  margin-bottom: 16px;
+  padding-right: 44px;
+}
+
+.adicionados .fechar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.titulo-adicionados {
+  margin: 0 0 6px;
+  font-weight: 650;
+}
+
+.adicionados ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+.link:hover strong {
+  color: var(--marca);
+}
+
+.choque {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  color: var(--vermelho);
+  font-size: 0.85rem;
+}
+
+.choque svg,
+.choque-dia svg {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+}
+
+.observacao {
+  margin: 8px 0 0;
 }
 
 /* Navegar entre semanas */
@@ -589,16 +749,6 @@ onMounted(carregar)
 .vazio .botao {
   margin-top: 6px;
 }
-
-/* Cores das atividades: uma barra, um ponto ou um fundo leve; o texto fica sempre nas cores de texto. */
-.cor-azul { --cor: var(--r-azul); }
-.cor-violeta { --cor: var(--r-violeta); }
-.cor-verde { --cor: var(--r-verde); }
-.cor-laranja { --cor: var(--r-laranja); }
-.cor-amarelo { --cor: var(--r-amarelo); }
-.cor-rosa { --cor: var(--r-rosa); }
-.cor-turquesa { --cor: var(--r-turquesa); }
-.cor-cinza { --cor: var(--r-cinza); }
 
 .ponto-cor {
   flex-shrink: 0;
@@ -657,14 +807,35 @@ onMounted(carregar)
   color: var(--marca-texto);
 }
 
-.ponto {
+.dia .ponto {
   position: absolute;
   top: 5px;
   right: 6px;
   width: 6px;
   height: 6px;
   border-radius: 999px;
+  background: var(--texto-fraco);
+}
+
+.dia.ativo .ponto {
+  background: var(--marca-texto);
+}
+
+.dia .alerta {
+  position: absolute;
+  top: -5px;
+  right: -2px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border: 2px solid var(--fundo);
+  border-radius: 999px;
   background: var(--vermelho);
+  color: var(--fundo);
+  font-size: 0.68rem;
+  font-weight: 800;
+  box-sizing: content-box;
 }
 
 /* Um dia */
@@ -686,10 +857,17 @@ onMounted(carregar)
   margin-bottom: 12px;
 }
 
+.choque-dia {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .bloco {
   display: flex;
   align-items: stretch;
-  gap: 4px;
+  gap: 2px;
   border-left: 3px solid var(--cor);
 }
 
@@ -712,7 +890,7 @@ onMounted(carregar)
   align-items: center;
   gap: 12px;
   min-width: 0;
-  padding: 12px 6px 12px 10px;
+  padding: 12px 4px 12px 10px;
   border: 0;
   background: transparent;
   text-align: left;
@@ -729,6 +907,12 @@ onMounted(carregar)
   color: var(--texto-suave);
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
+}
+
+.horario.tarefa {
+  color: var(--marca);
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .texto {
@@ -755,6 +939,21 @@ onMounted(carregar)
   flex-shrink: 0;
   color: var(--texto-fraco);
   font-size: 0.78rem;
+}
+
+.lixeira {
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--texto-fraco);
+}
+
+.lixeira:hover {
+  color: var(--vermelho);
+}
+
+.lixeira svg {
+  width: 19px;
+  height: 19px;
 }
 
 .bloco.feito .nome {
@@ -791,84 +990,6 @@ onMounted(carregar)
   min-height: 32px;
   padding: 4px 10px;
   font-size: 0.87rem;
-}
-
-/* Semana inteira */
-.grade-semana {
-  margin-top: 14px;
-  overflow-x: auto;
-}
-
-.grade {
-  display: grid;
-  grid-template-columns: 30px repeat(7, minmax(40px, 1fr));
-  gap: 0 3px;
-}
-
-.topo-coluna {
-  position: relative;
-  height: 28px;
-  border: 0;
-  background: transparent;
-  color: var(--texto-suave);
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.coluna.hoje .topo-coluna {
-  color: var(--marca);
-}
-
-.topo-coluna .ponto {
-  top: 4px;
-  right: 2px;
-}
-
-.corpo-coluna {
-  position: relative;
-  height: calc(var(--hora) * var(--horas));
-  background: repeating-linear-gradient(to bottom, var(--linha) 0 1px, transparent 1px var(--hora));
-}
-
-.coluna-horas .corpo-coluna {
-  display: grid;
-  grid-auto-rows: var(--hora);
-  background: none;
-}
-
-.hora {
-  color: var(--texto-fraco);
-  font-size: 0.66rem;
-  font-variant-numeric: tabular-nums;
-  transform: translateY(-5px);
-}
-
-.pedaco {
-  position: absolute;
-  right: 0;
-  left: 0;
-  overflow: hidden;
-  padding: 2px 4px;
-  border: 0;
-  border-left: 3px solid var(--cor);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--cor) 18%, var(--fundo));
-  color: var(--texto);
-  font-size: 0.66rem;
-  line-height: 1.2;
-  text-align: left;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-  cursor: pointer;
-}
-
-.pedaco.feito {
-  opacity: 0.5;
-}
-
-.pedaco.conflito {
-  outline: 1.5px solid var(--vermelho);
 }
 
 /* Metas */
@@ -950,6 +1071,20 @@ onMounted(carregar)
   width: auto;
   min-height: 32px;
   padding: 4px 10px;
+}
+
+.marcar-fixa {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.marcar-fixa input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--marca);
 }
 
 /* Folha */

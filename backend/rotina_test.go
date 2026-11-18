@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -126,5 +129,111 @@ func TestSemanaPlanejadaAPartirDoModeloEDepoisRemanejada(t *testing.T) {
 	e.pedir("GET", "/api/rotina/semanas/2026-11-16", nil, &s)
 	if s.Planejada {
 		t.Fatal("continuou planejada")
+	}
+}
+
+type respostaEventos struct {
+	Eventos    []eventoAdicionado `json:"eventos"`
+	Observacao string             `json:"observacao"`
+}
+
+func TestEventoComDataPlanejaASemanaEAvisaOChoque(t *testing.T) {
+	e := novoAmbiente(t)
+	// Quinta, 26/11 (semana de 23/11, ainda sem plano), das 07h às 10h: choca com inglês e trabalho.
+	ev := map[string]any{"eventos": []map[string]string{
+		{"data": "2026-11-26", "inicio": "07:00", "fim": "10:00", "titulo": "Encontro com amigos"},
+		{"data": "2026-11-27", "inicio": "", "fim": "", "titulo": "Pagar o boleto"},
+	}}
+	var r respostaEventos
+	if s := e.pedir("POST", "/api/rotina/eventos", ev, &r); s != http.StatusCreated || len(r.Eventos) != 2 {
+		t.Fatalf("eventos: %d %+v", s, r)
+	}
+	a := r.Eventos[0]
+	if a.Semana != "2026-11-23" || a.Dia != 3 || !a.SemanaNova || strings.Join(a.ChocaCom, ",") != "Inglês,Trabalho" {
+		t.Fatalf("evento: %+v", a)
+	}
+	if len(r.Eventos[1].ChocaCom) != 0 {
+		t.Fatalf("tarefa sem horário não choca: %+v", r.Eventos[1])
+	}
+
+	var s semanaRotina
+	e.pedir("GET", "/api/rotina/semanas/2026-11-23", nil, &s)
+	if !s.Planejada || len(s.Blocos) != len(rotinaPadrao().Modelo)+2 {
+		t.Fatalf("semana: %v %d", s.Planejada, len(s.Blocos))
+	}
+	// Refazer pelo modelo mantém os eventos.
+	s = semanaRotina{}
+	e.pedir("POST", "/api/rotina/semanas/2026-11-23?refazer=1", nil, &s)
+	if len(s.Blocos) != len(rotinaPadrao().Modelo)+2 {
+		t.Fatalf("refeita: %d", len(s.Blocos))
+	}
+
+	// O mês: as semanas planejadas no intervalo.
+	var lista []semanaRotina
+	if st := e.pedir("GET", "/api/rotina/semanas?de=2026-11-02&ate=2026-12-06", nil, &lista); st != http.StatusOK || len(lista) != 1 || lista[0].Inicio != "2026-11-23" {
+		t.Fatalf("mês: %d %+v", st, lista)
+	}
+
+	ruins := []map[string]string{
+		{"data": "26/11", "inicio": "07:00", "fim": "08:00", "titulo": "x"},
+		{"data": "2026-11-26", "inicio": "09:00", "fim": "08:00", "titulo": "x"},
+		{"data": "2026-11-26", "inicio": "09:00", "fim": "10:00"},
+	}
+	for _, ruim := range ruins {
+		if st := e.pedir("POST", "/api/rotina/eventos", map[string]any{"eventos": []map[string]string{ruim}}, nil); st != http.StatusBadRequest {
+			t.Fatalf("%v: esperava 400, veio %d", ruim, st)
+		}
+	}
+}
+
+func TestFalarComOClaudeAdicionaOQueEleEntendeu(t *testing.T) {
+	e := novoAmbiente(t)
+	var pedido string
+	e.app.ia = func(ctx context.Context, sistema, p, esquema string) (json.RawMessage, error) {
+		pedido = p
+		return json.RawMessage(`{"eventos":[{"data":"2026-11-12","inicio":"19:00","fim":"22:00","titulo":"Encontro com amigos","atividade":"","nota":""},
+			{"data":"2026-11-14","inicio":"10:00","fim":"11:00","titulo":"Academia","atividade":"academia","nota":""}],"observacao":"Presumi a noite."}`), nil
+	}
+	var r respostaEventos
+	if s := e.pedir("POST", "/api/rotina/falar", map[string]string{"texto": "quinta das 7 às 10 encontro com amigos e academia sábado às 10"}, &r); s != http.StatusCreated {
+		t.Fatalf("falar: %d", s)
+	}
+	if !strings.Contains(pedido, "2026-11-12 quinta") || !strings.Contains(pedido, "encontro com amigos") {
+		t.Fatalf("o pedido ao Claude não tem o calendário e a fala: %s", pedido)
+	}
+	if len(r.Eventos) != 2 || r.Observacao != "Presumi a noite." || r.Eventos[0].Dia != 3 || r.Eventos[1].Atividade != "academia" {
+		t.Fatalf("falar: %+v", r)
+	}
+	if strings.Join(r.Eventos[1].ChocaCom, ",") != "Trabalho" {
+		t.Fatalf("academia às 10 no sábado choca com o trabalho das 9 às 12: %+v", r.Eventos[1])
+	}
+
+	e.app.ia = nil
+	if s := e.pedir("POST", "/api/rotina/falar", map[string]string{"texto": "x"}, nil); s != http.StatusServiceUnavailable {
+		t.Fatalf("sem IA: %d", s)
+	}
+}
+
+func TestSugerirUmaSemanaFicaSoComOsBlocosValidos(t *testing.T) {
+	e := novoAmbiente(t)
+	var pedido string
+	e.app.ia = func(ctx context.Context, sistema, p, esquema string) (json.RawMessage, error) {
+		pedido = p
+		return json.RawMessage(`{"explicacao":"Mais programação.","blocos":[
+			{"dia":0,"inicio":"07:00","fim":"08:00","atividade":"ingles","nota":""},
+			{"dia":0,"inicio":"09:00","fim":"08:00","atividade":"ingles","nota":""},
+			{"dia":1,"inicio":"07:00","fim":"08:00","atividade":"inventada","nota":""}]}`), nil
+	}
+	ativs := rotinaPadrao().Atividades
+	corpo := map[string]any{"atividades": ativs, "comentario": "prioriza programação", "anterior": rotinaPadrao().Modelo[:2]}
+	var r struct {
+		Blocos     []bloco `json:"blocos"`
+		Explicacao string  `json:"explicacao"`
+	}
+	if s := e.pedir("POST", "/api/rotina/sugerir", corpo, &r); s != http.StatusOK || len(r.Blocos) != 1 || r.Explicacao == "" {
+		t.Fatalf("sugerir: %d %+v", s, r)
+	}
+	if !strings.Contains(pedido, "prioriza programação") || !strings.Contains(pedido, "Sugestão anterior") || !strings.Contains(pedido, "futebol, Futebol, 1–1, prioridade 2, fixa") {
+		t.Fatalf("pedido: %s", pedido)
 	}
 }

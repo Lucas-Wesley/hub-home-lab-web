@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conflitos, diaDoMes, duracao, idDoNome, placar, rotuloSemana, somarDias, sono } from './rotina.js'
+import { conflitos, diaDoMes, diasComChoque, duracao, idDoNome, placar, rotuloSemana, semanaDe, semanasDoMes, somarDias, sono } from './rotina.js'
 
 const b = (id, dia, inicio, fim, atividade = 'x', feito = false) => ({ id, dia, inicio, fim, atividade, feito })
 
@@ -35,6 +35,21 @@ describe('rotina', () => {
     expect(p[0].tempo).toBe(180)
     expect(duracao(p[0].tempo)).toBe('3 h')
     expect(duracao(90)).toBe('1 h 30')
+  })
+
+  it('não avisa falta de uma atividade fixa e ignora tarefas sem horário nos choques', () => {
+    const p = placar([{ id: 'fut', meta_min: 1, meta_max: 1, prioridade: 2, fixa: true }], [])
+    expect(p[0].estado).toBe('fixa')
+    expect(p[0].falta).toBe(0)
+    const bl = [b('a', 2, '07:00', '08:00'), b('t', 2, '', ''), b('c', 3, '09:00', '11:00'), b('d', 3, '10:00', '12:00')]
+    expect([...conflitos(bl)].sort()).toEqual(['c', 'd'])
+    expect([...diasComChoque(bl)]).toEqual([3])
+  })
+
+  it('acha a semana de uma data e as semanas de um mês', () => {
+    expect(semanaDe('2026-11-19')).toEqual({ inicio: '2026-11-16', dia: 3 })
+    expect(semanaDe('2026-11-22')).toEqual({ inicio: '2026-11-16', dia: 6 })
+    expect(semanasDoMes('2026-11')).toEqual(['2026-10-26', '2026-11-02', '2026-11-09', '2026-11-16', '2026-11-23', '2026-11-30'])
   })
 
   it('cria um identificador a partir do nome', () => {

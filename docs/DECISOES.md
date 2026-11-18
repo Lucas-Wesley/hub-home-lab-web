@@ -281,6 +281,16 @@ rotina sugerida e as próximas fases (lembretes, treino, alimentação) estão e
 - **Cores:** oito (`--r-azul` … `--r-cinza`, no `style.css`, nos dois temas), só em barras, pontos e
   fundos leves; o texto fica nas cores de texto.
 - **Menu:** Rotina é o segundo item. No celular a barra tem nove abas; até 420 px a letra fica menor.
+- **Voz, eventos e IA (18/11, fase 1b):** `POST /api/rotina/eventos` põe eventos com data na semana
+  certa (planeja pelo modelo a que não tem plano) e devolve com o que cada um choca, **sem tirar nada**.
+  `POST /api/rotina/falar` manda a fala ao Claude, com o calendário dos próximos 60 dias e as
+  atividades, e adiciona o que ele entendeu. `POST /api/rotina/sugerir` monta uma semana pelas metas
+  (só os blocos válidos ficam). O ditado é o do navegador (como o `voz.js` do Acervo); a IA é o Claude
+  Code da imagem com a conta ativa (`/claude/ativa/token`), modelo `sonnet`, `--json-schema`, sem
+  ferramentas. Um bloco agora pode ter `titulo` (evento sem atividade), não ter horário (tarefa) e ser
+  `extra` (não veio do modelo; sobrevive ao "refazer"). Atividade `fixa` não gera aviso de falta.
+  `GET /api/rotina/semanas?de=&ate=` traz as semanas planejadas do mês. Nos testes de ponta a ponta, um
+  Claude falso (`backend/testdata/claude-falso.py`).
 
 ## Próximos passos
 
