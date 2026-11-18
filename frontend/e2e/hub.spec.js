@@ -281,3 +281,22 @@ test('anota uma sugestão em Ajustes', async ({ page }) => {
   await expect(page.getByText('Mostrar a temperatura do processador')).toBeVisible()
   await expect(page.getByText('Nova', { exact: true })).toBeVisible()
 })
+
+test('Claude mostra onde deveria estar na janela e quando acaba no ritmo atual', async ({ page }) => {
+  // Medido 1 dia e 21 h depois de a semana começar (27% do tempo), com 57% usados: passou do ritmo.
+  const medido = new Date('2026-11-18T16:52:00Z')
+  const conta = (id, nome, ativa, cinco, semana) => ({
+    id, nome, ativa, configurada: true, medido_em: medido.toISOString(),
+    gravado_em: '2026-11-10T12:00:00Z', vence_em: '2027-11-10T12:00:00Z',
+    uso: { esgotada: false, cinco_horas: { uso: cinco, zera_em: '2026-11-18T17:00:00Z' }, semana: { uso: semana, zera_em: '2026-11-23T20:00:00Z' } },
+  })
+  await page.route('**/api/claude?medir=1', (r) =>
+    r.fulfill({ json: { contas: [conta('pessoal', 'Pessoal', true, 0.81, 0.57), conta('empresa', 'Empresa', false, 0.0, 0.1)] } }),
+  )
+  await page.goto('/#/claude')
+  const pessoal = page.locator('.conta', { hasText: 'Pessoal' })
+  await expect(pessoal.locator('.ideal').nth(1)).toHaveAttribute('title', 'Ideal agora: 27%')
+  await expect(pessoal.getByText(/Acima do ritmo: o ideal agora seria 27%\. Assim acaba qui\., 19 de nov\., 2\d:\d\d, 4 dias antes de zerar/)).toBeVisible()
+  await expect(page.locator('.conta', { hasText: 'Empresa' }).getByText(/Dentro do ritmo: o ideal agora seria 27%\. Assim termina em ~37%/)).toBeVisible()
+  await page.screenshot({ path: process.env.SHOT || '/dev/null', fullPage: true })
+})

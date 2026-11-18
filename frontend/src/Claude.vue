@@ -61,6 +61,50 @@ async function guardar(c) {
 
 const pct = (u) => Math.round(u * 100)
 
+// Ritmo: a janela começa N horas antes de zerar. O "ideal" é a fração do tempo que já passou — usando
+// nessa velocidade, chega a 100% bem na hora de zerar. Daí sai a projeção: nesse ritmo, quando acaba.
+const HORA = 3600000
+const JANELAS = [
+  { nome: '5 horas', chave: 'cinco_horas', horas: 5, por: 'hora', passo: HORA },
+  { nome: 'Semana', chave: 'semana', horas: 168, por: 'dia', passo: 24 * HORA },
+]
+
+function antecedencia(ms) {
+  const h = ms / HORA
+  if (h >= 24) {
+    const d = Math.round(h / 24)
+    return `${d} ${d === 1 ? 'dia' : 'dias'}`
+  }
+  if (h >= 1) return `${Math.round(h)} h`
+  return `${Math.max(1, Math.round(ms / 60000))} min`
+}
+
+function ritmo(j, v, medidoEm) {
+  if (!v?.zera_em) return null
+  const fim = new Date(v.zera_em).getTime()
+  const total = j.horas * HORA
+  const inicio = fim - total
+  const agora = medidoEm ? new Date(medidoEm).getTime() : Date.now()
+  const decorrido = Math.min(1, Math.max(0, (agora - inicio) / total))
+  const r = { ideal: decorrido, estado: 'ok', texto: '' }
+  if (v.uso >= 1) return r
+  if (decorrido < 0.03) {
+    r.texto = 'A janela acabou de começar; a previsão aparece depois de um tempo de uso.'
+    return r
+  }
+  const idealTxt = `o ideal agora seria ${pct(decorrido)}%`
+  const previsto = v.uso / decorrido
+  if (previsto > 1) {
+    const acaba = inicio + (agora - inicio) / v.uso
+    const sobra = (1 - v.uso) / ((fim - agora) / j.passo)
+    r.estado = 'acima'
+    r.texto = `Acima do ritmo: ${idealTxt}. Assim acaba ${dataHora(new Date(acaba).toISOString())}, ${antecedencia(fim - acaba)} antes de zerar. Para durar até lá, use até ${Math.max(0, sobra * 100).toLocaleString('pt-BR', { maximumFractionDigits: sobra < 0.1 ? 1 : 0 })}% por ${j.por}.`
+  } else {
+    r.texto = `Dentro do ritmo: ${idealTxt}. Assim termina em ~${pct(previsto)}%; ainda dá para usar mais ${pct(decorrido - v.uso)} pontos agora sem passar do ideal.`
+  }
+  return r
+}
+
 function zera(iso) {
   if (!iso) return ''
   const d = new Date(iso)
@@ -99,14 +143,23 @@ onMounted(carregar)
         <div v-if="c.erro" class="aviso erro">{{ c.erro }}</div>
         <template v-if="c.uso">
           <p v-if="c.uso.esgotada" class="aviso erro">Limite esgotado: o Claude recusa as tarefas desta conta até a janela zerar.</p>
-          <div v-for="j in [{ nome: '5 horas', v: c.uso.cinco_horas }, { nome: 'Semana', v: c.uso.semana }]" :key="j.nome" class="janela" :class="{ fim: j.v.uso >= QUASE_NO_FIM }">
+          <div
+            v-for="j in JANELAS.map((x) => ({ ...x, v: c.uso[x.chave], r: ritmo(x, c.uso[x.chave], c.medido_em) }))"
+            :key="j.nome"
+            class="janela"
+            :class="{ fim: j.v.uso >= QUASE_NO_FIM }"
+          >
             <div class="topo">
               <span>{{ j.nome }}</span>
               <span class="valor">{{ pct(j.v.uso) }}% · {{ zera(j.v.zera_em) }}</span>
             </div>
-            <div class="trilha" role="meter" :aria-label="`${c.nome}, ${j.nome}`" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="pct(j.v.uso)">
-              <div class="preenchido" :style="{ width: `${Math.min(1, j.v.uso) * 100}%` }" />
+            <div class="barra">
+              <div class="trilha" role="meter" :aria-label="`${c.nome}, ${j.nome}`" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="pct(j.v.uso)">
+                <div class="preenchido" :style="{ width: `${Math.min(1, j.v.uso) * 100}%` }" />
+              </div>
+              <div v-if="j.r" class="ideal" :style="{ left: `${j.r.ideal * 100}%` }" :title="`Ideal agora: ${pct(j.r.ideal)}%`" />
             </div>
+            <p v-if="j.r?.texto" class="ritmo pequeno" :class="j.r.estado">{{ j.r.texto }}</p>
           </div>
         </template>
         <p class="suave pequeno rodape">
@@ -192,6 +245,42 @@ onMounted(carregar)
   border-radius: 999px;
   background: var(--azul-fundo);
   overflow: hidden;
+}
+
+.barra {
+  position: relative;
+}
+
+.ideal {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--r-verde);
+  box-shadow: 0 0 0 1.5px var(--fundo);
+}
+
+.ritmo {
+  margin: 6px 0 0;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+.ritmo.ok::before,
+.ritmo.acima::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--r-verde);
+}
+
+.ritmo.acima::before {
+  background: var(--r-laranja);
 }
 
 .preenchido {
