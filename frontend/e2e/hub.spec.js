@@ -298,5 +298,4 @@ test('Claude mostra onde deveria estar na janela e quando acaba no ritmo atual',
   await expect(pessoal.locator('.ideal').nth(1)).toHaveAttribute('title', 'Ideal agora: 27%')
   await expect(pessoal.getByText(/Acima do ritmo: o ideal agora seria 27%\. Assim acaba qui\., 19 de nov\., 2\d:\d\d, 4 dias antes de zerar/)).toBeVisible()
   await expect(page.locator('.conta', { hasText: 'Empresa' }).getByText(/Dentro do ritmo: o ideal agora seria 27%\. Assim termina em ~37%/)).toBeVisible()
-  await page.screenshot({ path: process.env.SHOT || '/dev/null', fullPage: true })
 })
