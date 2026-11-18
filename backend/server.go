@@ -16,6 +16,13 @@ func newServer(a *app, web fs.FS, version string) http.Handler {
 	mux.HandleFunc("GET /api/inicio", a.handleInicio)
 	mux.HandleFunc("PUT /api/inicio", a.handleSalvarInicio)
 
+	mux.HandleFunc("GET /api/rotina", a.handleRotina)
+	mux.HandleFunc("PUT /api/rotina", a.handleSalvarRotina)
+	mux.HandleFunc("GET /api/rotina/semanas/{inicio}", a.handleSemana)
+	mux.HandleFunc("POST /api/rotina/semanas/{inicio}", a.handlePlanejarSemana)
+	mux.HandleFunc("PUT /api/rotina/semanas/{inicio}", a.handleSalvarSemana)
+	mux.HandleFunc("DELETE /api/rotina/semanas/{inicio}", a.handleApagarSemana)
+
 	mux.HandleFunc("GET /api/armazenamento", a.handleArmazenamento)
 	mux.HandleFunc("GET /api/servidor", a.handleServidor)
 

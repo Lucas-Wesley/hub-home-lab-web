@@ -5,6 +5,9 @@ Biblioteca Digital, Flashcards) numa só interface — primeiro web, depois mobi
 
 Repositório: `github.com/Lucas-Wesley/hub-home-lab-web`
 
+> **Rotina (18/11/2026):** planejar a semana a partir de um modelo, remanejar e acompanhar as metas
+> ([`docs/ROTINA.md`](docs/ROTINA.md)).
+>
 > **Status (10/11/2026):** no ar o **painel do servidor** (`https://hub.internal`):
 > armazenamento do Proxmox, da VM e de cada app, memória e processador de cada app, contêineres e a limpeza do Docker com
 > agenda. A parte de conteúdo (juntar Acervo, Biblioteca e Flashcards) continua para o fim, porque

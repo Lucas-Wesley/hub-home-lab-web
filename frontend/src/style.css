@@ -41,6 +41,16 @@
   --mais: var(--azul-fundo);
   --menos: var(--vermelho-fundo);
 
+  /* Cores das atividades da Rotina (H14): só em barras, pontos e fundos leves, nunca no texto. */
+  --r-azul: #2f6fd6;
+  --r-violeta: #7c4ddb;
+  --r-verde: #1f9a5c;
+  --r-laranja: #e0702b;
+  --r-amarelo: #c99a06;
+  --r-rosa: #d6478f;
+  --r-turquesa: #129e9a;
+  --r-cinza: #9aa0aa;
+
   --raio-p: 8px;
   --raio: 12px;
   --raio-g: 18px;
@@ -74,6 +84,14 @@
     --azul-fundo: #1a2540;
     --vermelho: #f07a83;
     --vermelho-fundo: #3a1d21;
+    --r-azul: #7aa5f5;
+    --r-violeta: #b39bff;
+    --r-verde: #5fd19a;
+    --r-laranja: #f5a066;
+    --r-amarelo: #f0cc4f;
+    --r-rosa: #f28cbf;
+    --r-turquesa: #5fd6d0;
+    --r-cinza: #7d838e;
     color-scheme: dark;
   }
 }

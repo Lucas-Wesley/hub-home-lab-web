@@ -24,6 +24,8 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
   1, 2, 3, 7, 14 ou 30 dias, numa hora escolhida), e guarda o histórico.
 - **Início:** a tela de abertura, uma página de anotações como no Notion: texto, título, lista,
   checklist e toggle (H13).
+- **Rotina:** as atividades com meta por semana, a semana padrão e cada semana planejada a partir
+  dela, com remanejo e o placar das metas (H14, plano em [`ROTINA.md`](ROTINA.md)).
 - **Aplicações:** o link de cada app pelo nome `.internal` e como instalá-lo no celular (H12).
 - **Ajustes:** Sugestões de melhoria, com a API comum (`/api/sugestoes`).
 - **Vigia:** avisa no celular, pelo ntfy, disco cheio, contêiner parado e backup atrasado (H9).
@@ -256,6 +258,29 @@ sem botão de salvar.
   juntam.
 - **Abertura e menu:** o Início virou a tela de abertura (antes era Aplicações). No celular, a barra
   tem oito abas: "Aplicações" vira "Apps" e, até 380 px de largura, a letra fica um pouco menor.
+
+### H14. Rotina: modelo da semana, semanas planejadas e metas (18/11/2026)
+
+O Lucas quis planejar a rotina no Hub: uma semana padrão, ajustada todo domingo à noite para a semana
+seguinte e remanejada quando algo muda (feriado, aniversário, uma noite livre). O plano inteiro, a
+rotina sugerida e as próximas fases (lembretes, treino, alimentação) estão em [`ROTINA.md`](ROTINA.md).
+
+- **Peças:** atividades (cor, meta mín.–máx. de vezes por semana, prioridade 1–3), o **modelo**
+  (blocos com dia 0–6, começo, fim, atividade e nota) e as **semanas**, uma por segunda-feira, que
+  nascem como cópia do modelo e mudam sozinhas: mudar o modelo não mexe nas semanas já planejadas.
+- **Onde fica:** no banco do Hub, como o Início: a tabela `rotina` (uma linha, JSON com atividades e
+  modelo) e `rotina_semanas` (uma linha por semana, JSON com blocos, feito e notas dos dias). O
+  servidor confere a forma (horários `HH:MM`, fim depois do começo, atividade conhecida no modelo,
+  cores da lista) e quem salva por último vale. Sem nada salvo, o `GET` devolve a rotina padrão
+  (`backend/rotina_padrao.go`), montada a partir do caderno.
+- **API:** `GET/PUT /api/rotina`; `GET/POST/PUT/DELETE /api/rotina/semanas/{segunda}` (o `POST`
+  planeja pelo modelo; `?refazer=1` refaz uma semana já planejada). O `GET /api/rotina` traz o dia
+  de hoje no fuso de casa, para a tela abrir na semana e no dia certos.
+- **Uma semana pode citar uma atividade apagada** depois: ela aparece como "Atividade apagada". Uma
+  atividade que está no modelo não pode ser apagada.
+- **Cores:** oito (`--r-azul` … `--r-cinza`, no `style.css`, nos dois temas), só em barras, pontos e
+  fundos leves; o texto fica nas cores de texto.
+- **Menu:** Rotina é o segundo item. No celular a barra tem nove abas; até 420 px a letra fica menor.
 
 ## Próximos passos
 

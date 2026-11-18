@@ -15,6 +15,10 @@ defineProps({ nome: { type: String, required: true } })
     <template v-else-if="nome === 'inicio'">
       <path d="M4.5 10.5 12 4.5l7.5 6V19a1 1 0 01-1 1h-4v-5.5h-5V20h-4a1 1 0 01-1-1z" />
     </template>
+    <template v-else-if="nome === 'rotina'">
+      <rect x="4" y="5.5" width="16" height="14.5" rx="2" />
+      <path d="M8 3.5v4M16 3.5v4M4 10h16M8 14h3M8 17h6" />
+    </template>
     <template v-else-if="nome === 'disco'">
       <ellipse cx="12" cy="6.5" rx="7.5" ry="2.5" />
       <path d="M4.5 6.5v11c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-11M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5" />

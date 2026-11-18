@@ -73,6 +73,51 @@ test('abre no Início: a página é o campo, com texto, checklist, lista e toggl
   await expect(folha.getByText('Passagem')).toBeHidden()
 })
 
+test('Rotina: planeja a semana pelo modelo, remaneja um bloco, marca feito e vê as metas', async ({ page }) => {
+  await page.goto('/#/rotina')
+  await expect(page.getByRole('heading', { name: 'Rotina', level: 1 })).toBeVisible()
+
+  // A semana ainda não existe: nasce do modelo.
+  await expect(page.getByText('Esta semana ainda não foi planejada.')).toBeVisible()
+  await page.getByRole('button', { name: 'Planejar a partir do modelo' }).click()
+  await expect(page.getByRole('heading', { name: 'Metas da semana' })).toBeVisible()
+
+  // Segunda: inglês às 7h, marcado como feito.
+  await page.getByRole('tab', { name: 'Segunda' }).click()
+  await page.getByRole('checkbox', { name: 'Inglês feito' }).check()
+  await expect(page.locator('.meta', { hasText: 'Inglês' }).getByText('1 feita')).toBeVisible()
+
+  // Remanejar: a programação da segunda vai para domingo.
+  await page.locator('.bloco', { hasText: 'Programação' }).getByRole('button').click()
+  const folha = page.getByRole('form', { name: 'Editar bloco' })
+  await folha.getByRole('combobox').nth(1).selectOption({ index: 6 })
+  await folha.getByRole('button', { name: 'Salvar' }).click()
+  await expect(page.getByRole('heading', { name: /^Domingo/ })).toBeVisible()
+  await expect(page.locator('.bloco', { hasText: 'Programação' })).toBeVisible()
+
+  // Nota do dia e dia livre: sexta é feriado.
+  await page.getByRole('tab', { name: 'Sexta' }).click()
+  await page.getByLabel('Nota do dia').fill('Feriado')
+  await page.getByLabel('Nota do dia').press('Enter')
+  page.once('dialog', (d) => d.accept())
+  await page.getByRole('button', { name: 'Limpar o dia' }).click()
+  await expect(page.getByText('Dia livre.')).toBeVisible()
+  await expect(page.locator('.meta', { hasText: 'Programação' }).getByText('3 de 3–4')).toBeVisible()
+
+  // Depois de recarregar, tudo continua.
+  await page.reload()
+  await page.getByRole('tab', { name: 'Sexta' }).click()
+  await expect(page.getByLabel('Nota do dia')).toHaveValue('Feriado')
+
+  // A grade da semana inteira e o modelo.
+  await page.getByRole('radio', { name: 'Semana inteira' }).click()
+  await expect(page.locator('.pedaco').first()).toBeVisible()
+  await page.getByRole('tab', { name: 'Modelo' }).click()
+  await expect(page.getByRole('heading', { name: 'Metas do modelo' })).toBeVisible()
+  await page.getByRole('tab', { name: 'Atividades e metas' }).click()
+  await expect(page.getByLabel('Nome da atividade').first()).toHaveValue('Inglês')
+})
+
 test('Aplicações tem o link de cada app pelo nome', async ({ page }) => {
   await page.goto('/#/aplicacoes')
   await expect(page.getByRole('heading', { name: 'Aplicações' })).toBeVisible()

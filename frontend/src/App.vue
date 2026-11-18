@@ -8,6 +8,7 @@ import Icone from './Icone.vue'
 import Inicio from './Inicio.vue'
 import Limpeza from './Limpeza.vue'
 import Rede from './Rede.vue'
+import Rotina from './Rotina.vue'
 import Servidor from './Servidor.vue'
 import { api } from './api.js'
 
@@ -24,6 +25,7 @@ const rota = computed(() => {
 
 const MENU = [
   { rota: 'inicio', nome: 'Início', icone: 'inicio' },
+  { rota: 'rotina', nome: 'Rotina', icone: 'rotina' },
   { rota: 'aplicacoes', nome: 'Aplicações', curto: 'Apps', icone: 'apps' },
   { rota: 'armazenamento', nome: 'Armazenamento', curto: 'Disco', icone: 'disco' },
   { rota: 'servidor', nome: 'Servidor', icone: 'servidor' },
@@ -89,7 +91,8 @@ onBeforeUnmount(() => {
     </aside>
 
     <main class="conteudo">
-      <Servidor v-if="rota.nome === 'servidor'" />
+      <Rotina v-if="rota.nome === 'rotina'" />
+      <Servidor v-else-if="rota.nome === 'servidor'" />
       <Limpeza v-else-if="rota.nome === 'limpeza'" />
       <Rede v-else-if="rota.nome === 'rede'" />
       <Claude v-else-if="rota.nome === 'claude'" />
@@ -252,7 +255,7 @@ nav {
     display: none;
   }
 
-  /* Oito abas numa linha: o nome longo dá lugar ao curto (o leitor de tela continua lendo o longo). */
+  /* Nove abas numa linha: o nome longo dá lugar ao curto (o leitor de tela continua lendo o longo). */
   .nome.tem-curto {
     position: absolute;
     width: 1px;
@@ -266,7 +269,7 @@ nav {
   }
 
   nav {
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(9, 1fr);
   }
 
   .item {
@@ -301,11 +304,16 @@ nav {
   }
 }
 
-/* Celular estreito (360 px): oito nomes só cabem com a letra um pouco menor. */
-@media (max-width: 380px) {
+/* Celular estreito: nove nomes só cabem com a letra um pouco menor. */
+@media (max-width: 420px) {
   .item {
-    font-size: 0.6rem;
-    letter-spacing: -0.01em;
+    font-size: 0.58rem;
+    letter-spacing: -0.02em;
+  }
+
+  .item svg {
+    width: 20px;
+    height: 20px;
   }
 }
 </style>

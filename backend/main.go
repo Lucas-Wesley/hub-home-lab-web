@@ -97,7 +97,7 @@ func abrirBanco(caminho string) (*sql.DB, error) {
 }
 
 // O Hub não guarda conteúdo dos outros apps: só a agenda de limpeza, o histórico das limpezas, as
-// sugestões e a página Início. Horários em RFC 3339, UTC e sem fração de segundo: a ordem do texto é a ordem do tempo.
+// sugestões, a página Início e a rotina. Horários em RFC 3339, UTC e sem fração de segundo: a ordem do texto é a ordem do tempo.
 const esquema = `
 CREATE TABLE IF NOT EXISTS agenda_limpeza (
 	id              INTEGER PRIMARY KEY CHECK (id = 1),
@@ -129,6 +129,16 @@ CREATE TABLE IF NOT EXISTS sugestoes (
 CREATE TABLE IF NOT EXISTS inicio (
 	id            INTEGER PRIMARY KEY CHECK (id = 1),
 	conteudo      TEXT NOT NULL, -- JSON do editor
+	atualizada_em TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS rotina (
+	id            INTEGER PRIMARY KEY CHECK (id = 1),
+	conteudo      TEXT NOT NULL, -- JSON: atividades e modelo da semana
+	atualizada_em TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS rotina_semanas (
+	inicio        TEXT PRIMARY KEY, -- a segunda-feira, AAAA-MM-DD
+	conteudo      TEXT NOT NULL,    -- JSON: blocos e notas dos dias
 	atualizada_em TEXT NOT NULL
 );
 `
