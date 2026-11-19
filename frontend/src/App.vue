@@ -4,6 +4,7 @@ import Ajustes from './Ajustes.vue'
 import Aplicacoes from './Aplicacoes.vue'
 import Armazenamento from './Armazenamento.vue'
 import Claude from './Claude.vue'
+import Design from './Design.vue'
 import Icone from './Icone.vue'
 import Inicio from './Inicio.vue'
 import Limpeza from './Limpeza.vue'
@@ -51,10 +52,11 @@ function aoMudarHash() {
 const tema = ref(lerTema())
 const NOMES_TEMA = { auto: 'Tema do aparelho', claro: 'Tema claro', escuro: 'Tema escuro' }
 const ICONES_TEMA = { auto: 'auto', claro: 'sol', escuro: 'lua' }
-function trocarTema() {
-  tema.value = proximoTema(tema.value)
-  aplicarTema(tema.value)
+function escolherTema(t) {
+  tema.value = t
+  aplicarTema(t)
 }
+const trocarTema = () => escolherTema(proximoTema(tema.value))
 
 let tempoDoRecado
 function mostrarRecado(texto, erro = false) {
@@ -80,20 +82,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="barra">
-    <a class="marca" href="#/inicio">
-      <span class="marca-icone"><Icone nome="hub" :tamanho="18" /></span>
-      <span>Hub</span>
-    </a>
-    <div class="barra-direita">
-      <button class="botao discreto icone" :title="NOMES_TEMA[tema]" :aria-label="NOMES_TEMA[tema]" @click="trocarTema">
-        <Icone :nome="ICONES_TEMA[tema]" />
-      </button>
-    </div>
-  </header>
-
-  <div class="corpo">
+  <div class="moldura">
     <aside class="menu" aria-label="Menu">
+      <a class="marca" href="#/inicio">
+        <span class="marca-icone"><Icone nome="hub" :tamanho="18" /></span>
+        <span class="marca-texto">
+          <span class="marca-sobre">Homelab</span>
+          <span class="marca-nome">Hub</span>
+        </span>
+      </a>
       <nav>
         <button
           v-for="item in MENU"
@@ -107,7 +104,12 @@ onBeforeUnmount(() => {
           <span>{{ item.nome }}</span>
         </button>
       </nav>
-      <div class="rodape">{{ versao ? `versão ${versao.slice(0, 7)}` : 'sem conexão' }}</div>
+      <div class="rodape">
+        <span>{{ versao ? `versão ${versao.slice(0, 7)}` : 'sem conexão' }}</span>
+        <button class="botao discreto icone" :title="NOMES_TEMA[tema]" :aria-label="NOMES_TEMA[tema]" @click="trocarTema">
+          <Icone :nome="ICONES_TEMA[tema]" />
+        </button>
+      </div>
     </aside>
 
     <main class="conteudo">
@@ -116,7 +118,8 @@ onBeforeUnmount(() => {
       <Limpeza v-else-if="rota.nome === 'limpeza'" />
       <Rede v-else-if="rota.nome === 'rede'" />
       <Claude v-else-if="rota.nome === 'claude'" />
-      <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" :secao="rota.param" />
+      <Ajustes v-else-if="rota.nome === 'ajustes'" :tela="telaAnterior" :secao="rota.param" :tema="tema" @tema="escolherTema" />
+      <Design v-else-if="rota.nome === 'design'" />
       <Armazenamento v-else-if="rota.nome === 'armazenamento'" />
       <Aplicacoes v-else-if="rota.nome === 'aplicacoes'" />
       <Inicio v-else />
@@ -143,59 +146,60 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.barra {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  gap: var(--e4);
-  height: var(--barra);
-  padding: 0 var(--e5);
-  background: var(--fundo);
-  border-bottom: 1px solid var(--borda);
-}
-.marca {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--e2);
-  font-family: var(--fonte-titulo);
-  font-size: 19px;
-  font-weight: 500;
-  color: var(--texto);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.marca-icone { display: inline-flex; color: var(--texto); }
-.barra-direita { display: flex; align-items: center; gap: var(--e2); margin-left: auto; }
-
-.corpo { display: flex; }
+/* Sem barra no topo (referência de espaço): a marca abre a lateral e o tema fica no pé dela. */
+.moldura { display: flex; }
 
 .menu {
   position: sticky;
-  top: var(--barra);
+  top: 0;
   flex: none;
   display: flex;
   flex-direction: column;
   width: var(--nav);
-  height: calc(100vh - var(--barra));
-  padding: var(--e4) var(--e3) var(--e6) var(--e4);
+  height: 100vh;
+  padding: var(--e4) var(--e3);
   overflow-y: auto;
   border-right: 1px solid var(--borda);
+  background: var(--superficie);
 }
-.menu nav { display: grid; gap: 1px; }
+.menu nav { display: grid; gap: 2px; }
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  margin: 0 0 var(--e4);
+  padding: var(--e2);
+  color: var(--texto);
+  text-decoration: none;
+}
+.marca-icone {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-p);
+  background: var(--fundo);
+}
+.marca-texto { display: grid; line-height: 1.2; }
+.marca-sobre { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--texto-fraco); }
+.marca-nome { font-family: var(--fonte-titulo); font-size: 18px; font-weight: 500; }
 
 .rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: auto;
-  padding: var(--e3) var(--e2) 0;
+  padding: var(--e3) 0 0 var(--e2);
   color: var(--texto-fraco);
-  font-size: 12.5px;
+  font-size: 12px;
 }
 
 .conteudo {
   flex: 1;
   min-width: 0;
-  min-height: calc(100vh - var(--barra));
+  min-height: 100vh;
 }
 
 .recado-enter-active,
@@ -211,7 +215,6 @@ onBeforeUnmount(() => {
 .abas-celular { display: none; }
 
 @media (max-width: 899px) {
-  .barra { padding: 0 var(--e3); gap: var(--e2); }
   .menu { display: none; }
 
   .abas-celular {

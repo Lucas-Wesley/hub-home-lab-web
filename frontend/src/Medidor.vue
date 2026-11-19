@@ -38,7 +38,7 @@ const cheio = computed(() => fracao.value >= QUASE_CHEIO)
 
 <style scoped>
 .medidor {
-  padding: 12px 0;
+  padding: 10px 0;
 }
 
 .topo {
@@ -64,9 +64,9 @@ const cheio = computed(() => fracao.value >= QUASE_CHEIO)
 }
 
 .trilha {
-  height: 8px;
+  height: 6px;
   border-radius: 999px;
-  background: var(--azul-fundo);
+  background: var(--superficie-2);
   overflow: hidden;
 }
 
@@ -74,7 +74,7 @@ const cheio = computed(() => fracao.value >= QUASE_CHEIO)
   height: 100%;
   min-width: 4px;
   border-radius: 999px;
-  background: var(--azul);
+  background: var(--texto-suave);
 }
 
 .cheio .trilha {

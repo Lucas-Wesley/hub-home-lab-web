@@ -21,7 +21,7 @@ const curto = (endereco) => endereco.replace('https://', '')
 
 <template>
   <div class="pagina">
-    <h1>Aplicações</h1>
+    <div class="topo-pagina"><h1>Aplicações</h1></div>
     <p class="suave explicacao">Toque para abrir. Os endereços antigos, com o IP e a porta, continuam valendo.</p>
 
     <section class="grade">

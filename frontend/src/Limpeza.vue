@@ -73,7 +73,7 @@ onMounted(carregar)
 
 <template>
   <div class="pagina">
-    <h1>Limpeza</h1>
+    <div class="topo-pagina"><h1>Limpeza</h1></div>
     <p class="suave explicacao">
       Cada deploy constrói o app de novo na VM, e o Docker guarda um cache desse build. Com o tempo, esse cache vira a maior parte do disco. A limpeza
       apaga o cache e as imagens soltas, que sobram de builds antigos. Os dados dos apps e a versão anterior de cada um, usada para voltar se um deploy
@@ -84,7 +84,9 @@ onMounted(carregar)
     <div v-else-if="estado && !estado.docker_ligado" class="aviso">O Docker não está ligado ao painel; a limpeza não roda.</div>
 
     <template v-if="estado">
-      <h2 class="secao">Agora</h2>
+      <div class="quadros">
+      <section class="quadro">
+      <div class="quadro-topo"><h2 class="rotulo-secao">Agora</h2></div>
       <div class="agora">
         <p v-if="docker">
           Para liberar: <strong>{{ bytes(docker.cache_liberavel) }}</strong> de cache de build e <strong>{{ bytes(docker.imagens_soltas) }}</strong> de imagens soltas.
@@ -92,7 +94,10 @@ onMounted(carregar)
         <button class="botao primario" :disabled="limpando || !estado.docker_ligado" @click="limparAgora">{{ limpando ? 'Limpando…' : 'Limpar agora' }}</button>
       </div>
 
-      <h2 class="secao">Agenda</h2>
+      </section>
+
+      <section class="quadro">
+      <div class="quadro-topo"><h2 class="rotulo-secao">Agenda</h2></div>
       <form v-if="agenda" class="agenda" @submit.prevent="salvar">
         <label class="marcar">
           <input v-model="agenda.ativa" type="checkbox" />
@@ -133,6 +138,8 @@ onMounted(carregar)
           <span v-if="estado.agenda.ativa && !mudou" class="suave pequeno">Próxima limpeza: {{ dataHora(estado.agenda.proxima_em) }}</span>
         </div>
       </form>
+      </section>
+      </div>
 
       <h2 class="secao">Histórico</h2>
       <ul v-if="estado.historico.length" class="lista">

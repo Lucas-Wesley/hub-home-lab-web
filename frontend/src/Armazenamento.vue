@@ -54,7 +54,7 @@ onMounted(() => carregar())
 
 <template>
   <div class="pagina">
-    <div class="cabecalho">
+    <div class="topo-pagina">
       <h1>Armazenamento</h1>
       <button class="botao discreto icone" :disabled="medindo" aria-label="Medir de novo" title="Medir de novo" @click="carregar(true)">
         <Icone nome="atualizar" />
@@ -71,8 +71,36 @@ onMounted(() => carregar())
         <a href="#/limpeza">Ir para Limpeza</a>
       </div>
 
+      <div class="quadros">
+      <!-- Disco da VM, em partes -->
+      <section class="quadro">
+      <div class="quadro-topo"><h2 class="rotulo-secao">VM apps</h2></div>
+      <div v-if="disco" class="vm">
+        <p class="numero">{{ bytes(disco.usado) }} <span class="de">de {{ bytes(disco.total) }}</span></p>
+        <p class="suave pequeno">{{ bytes(disco.livre) }} livres, {{ porcento(disco.usado, disco.total) }}% em uso</p>
+        <div class="pilha" role="img" :aria-label="`Disco da VM: ${partes.map((p) => `${p.nome} ${bytes(p.bytes)}`).join(', ')}, livre ${bytes(disco.livre)}`">
+          <div v-for="p in partes.filter((x) => x.bytes > 0)" :key="p.nome" class="parte" :class="`cor-${p.cor}`" :style="{ flexGrow: p.bytes }" :title="`${p.nome}: ${bytes(p.bytes)}`" />
+          <div class="parte livre" :style="{ flexGrow: disco.livre }" :title="`Livre: ${bytes(disco.livre)}`" />
+        </div>
+        <ul class="legenda">
+          <li v-for="p in partes" :key="p.nome">
+            <span class="amostra" :class="`cor-${p.cor}`" />
+            <span class="nome">{{ p.nome }}</span>
+            <span class="valor">{{ bytes(p.bytes) }}</span>
+          </li>
+          <li>
+            <span class="amostra livre" />
+            <span class="nome">Livre</span>
+            <span class="valor">{{ bytes(disco.livre) }}</span>
+          </li>
+        </ul>
+      </div>
+      <div v-else class="aviso">{{ dados.disco_erro }}</div>
+      </section>
+
       <!-- Disco físico e armazenamentos do Proxmox -->
-      <h2 class="secao">Servidor (Proxmox)</h2>
+      <section class="quadro">
+      <div class="quadro-topo"><h2 class="rotulo-secao">Servidor (Proxmox)</h2></div>
       <template v-if="proxmox">
         <div class="lista">
           <Medidor
@@ -99,33 +127,14 @@ onMounted(() => carregar())
       </template>
       <div v-else-if="servidor?.proxmox_erro" class="aviso">{{ servidor.proxmox_erro }}</div>
       <div v-else class="aviso neutro">O Proxmox ainda não está ligado ao painel. <a href="#/servidor">Veja como ligar</a></div>
-
-      <!-- Disco da VM, em partes -->
-      <h2 class="secao">VM apps</h2>
-      <div v-if="disco" class="vm">
-        <p class="numero">{{ bytes(disco.usado) }} <span class="de">de {{ bytes(disco.total) }}</span></p>
-        <p class="suave pequeno">{{ bytes(disco.livre) }} livres, {{ porcento(disco.usado, disco.total) }}% em uso</p>
-        <div class="pilha" role="img" :aria-label="`Disco da VM: ${partes.map((p) => `${p.nome} ${bytes(p.bytes)}`).join(', ')}, livre ${bytes(disco.livre)}`">
-          <div v-for="p in partes.filter((x) => x.bytes > 0)" :key="p.nome" class="parte" :class="`cor-${p.cor}`" :style="{ flexGrow: p.bytes }" :title="`${p.nome}: ${bytes(p.bytes)}`" />
-          <div class="parte livre" :style="{ flexGrow: disco.livre }" :title="`Livre: ${bytes(disco.livre)}`" />
-        </div>
-        <ul class="legenda">
-          <li v-for="p in partes" :key="p.nome">
-            <span class="amostra" :class="`cor-${p.cor}`" />
-            <span class="nome">{{ p.nome }}</span>
-            <span class="valor">{{ bytes(p.bytes) }}</span>
-          </li>
-          <li>
-            <span class="amostra livre" />
-            <span class="nome">Livre</span>
-            <span class="valor">{{ bytes(disco.livre) }}</span>
-          </li>
-        </ul>
+      </section>
       </div>
-      <div v-else class="aviso">{{ dados.disco_erro }}</div>
 
+
+      <div class="quadros">
       <!-- Por app -->
-      <h2 class="secao">Por app</h2>
+      <section class="quadro">
+      <div class="quadro-topo"><h2 class="rotulo-secao">Por app</h2><span class="pequeno">toque para abrir</span></div>
       <div v-if="dados.apps_erro" class="aviso">{{ dados.apps_erro }}</div>
       <ul v-else class="lista">
         <li v-for="a in dados.apps" :key="a.nome" class="por-app">
@@ -144,8 +153,11 @@ onMounted(() => carregar())
         </li>
       </ul>
 
+      </section>
+
       <!-- Docker -->
-      <h2 class="secao">Docker</h2>
+      <section class="quadro">
+      <div class="quadro-topo"><h2 class="rotulo-secao">Docker</h2><a v-if="docker?.cache_liberavel" href="#/limpeza">Limpar</a></div>
       <ul v-if="docker" class="lista">
         <li class="linha">
           <span>Imagens</span>
@@ -164,6 +176,8 @@ onMounted(() => carregar())
         </li>
       </ul>
       <div v-else class="aviso">{{ dados.docker_erro }}</div>
+      </section>
+      </div>
 
       <p class="medido suave">Medido em {{ dataHora(dados.medido_em) }}. As pastas são medidas de novo a cada minuto.</p>
     </template>
@@ -251,7 +265,7 @@ h2.secao:first-of-type {
 
 .numero {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }

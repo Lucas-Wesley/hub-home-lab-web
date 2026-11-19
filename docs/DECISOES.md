@@ -320,6 +320,23 @@ O que se viu antes da vigia (registros do Tailscale na VM): quedas em 13/11 (03:
 16/11 (12:55, 17:47) e 18/11 (16:27). Na queda das ~21h de 18/11 a wan e a VM estavam com internet e o DNS respondia
 ao Mac sem falhas: o defeito não foi da Claro.
 
+### H16. O Hub é a fonte do design system; quarta versão, de espaço (18/11/2026)
+
+- **O quê:** o `docs/DESIGN-SYSTEM.md`, o `style.css` e a vitrine `#/design` do Hub viram a
+  referência de todas as apps. A Trilha, onde o design nasceu, passa a apontar para cá, e os prints
+  da Claude Platform vieram para `docs/design/referencias/`.
+- **Quarta versão:** o Lucas achou que a tela "ocupa muito espaço à toa", com tudo empilhado. A
+  referência de **organização de espaço** são prints de uma plataforma de curso (descritos no
+  DESIGN-SYSTEM §3, não guardados). Saiu a barra do topo: a marca abre a lateral e o tema fica no pé
+  dela e em Ajustes. O cabeçalho virou uma linha só (`.topo-pagina`): na Rotina, o título e o
+  "Adicionar" ficam lado a lado, e as abas, a semana e Dia/Semana inteira ficam numa barra de
+  ferramentas. A página vai até 1200 px, com painel lateral (as metas da semana) e quadros lado a
+  lado (Servidor, Armazenamento, Limpeza, Claude). Títulos e listas ficaram menores e mais densos.
+- **Também:** o dia escolhido na Rotina deixou de ser azul cheio (`--ativo`); a barra de adicionar
+  deixou de ser pílula; os medidores de uso ficaram neutros (vermelhos só quando quase cheios).
+  Corrigido um seletor da Rotina (`.corpo:hover .nome`) que casava com o `.corpo` do App e pintava
+  todos os nomes de azul com o mouse em qualquer lugar da tela.
+
 ## Próximos passos
 
 - [ ] Criar o token do Proxmox (H3) e conferir a tela Servidor com os números reais.

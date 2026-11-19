@@ -344,13 +344,14 @@ onMounted(carregar)
 
 <template>
   <div class="pagina rotina">
-    <h1>Rotina</h1>
+    <div class="topo-pagina">
+      <h1>Rotina</h1>
+      <FalarRotina v-if="cfg?.ia && (aba === 'semana' || aba === 'mes')" class="meio" @adicionado="aoAdicionar" />
+    </div>
 
     <div v-if="erro" class="aviso">{{ erro }}</div>
 
     <template v-if="cfg">
-      <FalarRotina v-if="cfg.ia && (aba === 'semana' || aba === 'mes')" @adicionado="aoAdicionar" />
-
       <div v-if="adicionados?.eventos.length" class="adicionados cartao" role="status">
         <button class="botao icone fechar" aria-label="Fechar" @click="adicionados = null"><Icone nome="fechar" /></button>
         <p class="titulo-adicionados">{{ adicionados.eventos.length === 1 ? 'Adicionado' : `${adicionados.eventos.length} adicionados` }}</p>
@@ -366,6 +367,7 @@ onMounted(carregar)
         <p v-if="adicionados.observacao" class="suave pequeno observacao">{{ adicionados.observacao }}</p>
       </div>
 
+      <div class="ferramentas">
       <div class="abas" role="tablist" aria-label="Partes da rotina">
         <button
           v-for="[id, nome] in [
@@ -384,21 +386,27 @@ onMounted(carregar)
         </button>
       </div>
 
+      <div v-if="aba === 'semana' || aba === 'modelo'" class="direita">
+        <div v-if="aba === 'semana'" class="navegar">
+          <button class="botao icone discreto" aria-label="Semana anterior" @click="mudarSemana(-1)"><Icone nome="voltar" /></button>
+          <strong class="qual">{{ rotuloSemana(inicio) }}</strong>
+          <button class="botao icone discreto" aria-label="Próxima semana" @click="mudarSemana(1)"><Icone nome="avancar" /></button>
+          <span v-if="relacao" class="etiqueta">{{ relacao }}</span>
+          <button v-else class="botao discreto" @click="abrirSemana(cfg.semana_atual, cfg.dia_de_hoje)">Ir para hoje</button>
+        </div>
+        <div v-if="emModelo || semana?.planejada" class="abas" role="radiogroup" aria-label="Visão">
+          <button role="radio" :class="{ ativa: visao === 'dia' }" :aria-checked="visao === 'dia'" @click="visao = 'dia'">Dia</button>
+          <button role="radio" :class="{ ativa: visao === 'semana' }" :aria-checked="visao === 'semana'" @click="visao = 'semana'">Semana inteira</button>
+        </div>
+      </div>
+      </div>
+
       <!-- ===== Mês ===== -->
       <MesRotina v-if="aba === 'mes'" :cfg="cfg" :por-id="porId" :versao="versaoDoMes" @abrir="(x) => abrirSemana(x.inicio, x.dia)" @novo="abrirEvento" />
 
       <!-- ===== Semana e modelo ===== -->
       <template v-else-if="aba === 'semana' || aba === 'modelo'">
-        <div v-if="aba === 'semana'" class="navegar">
-          <button class="botao icone" aria-label="Semana anterior" @click="mudarSemana(-1)"><Icone nome="voltar" /></button>
-          <div class="qual">
-            <strong>{{ rotuloSemana(inicio) }}</strong>
-            <span v-if="relacao" class="etiqueta">{{ relacao }}</span>
-            <button v-else class="botao discreto" @click="abrirSemana(cfg.semana_atual, cfg.dia_de_hoje)">Ir para hoje</button>
-          </div>
-          <button class="botao icone" aria-label="Próxima semana" @click="mudarSemana(1)"><Icone nome="avancar" /></button>
-        </div>
-        <p v-else class="suave modelo-texto">
+        <p v-if="aba === 'modelo'" class="explicacao">
           A semana padrão. Cada semana nova nasce como cópia dele; mudar o modelo não mexe nas semanas já planejadas.
         </p>
 
@@ -408,12 +416,8 @@ onMounted(carregar)
           <button class="botao primario" :disabled="ocupado" @click="planejar()">Planejar a partir do modelo</button>
         </div>
 
-        <template v-else-if="emModelo || semana">
-          <div class="abas" role="radiogroup" aria-label="Visão">
-            <button role="radio" :class="{ ativa: visao === 'dia' }" :aria-checked="visao === 'dia'" @click="visao = 'dia'">Dia</button>
-            <button role="radio" :class="{ ativa: visao === 'semana' }" :aria-checked="visao === 'semana'" @click="visao = 'semana'">Semana inteira</button>
-          </div>
-
+        <div v-else-if="emModelo || semana" class="duas-colunas">
+          <div class="principal">
           <!-- Dias: S T Q Q S S D -->
           <div v-if="visao === 'dia'" class="dias" role="tablist" aria-label="Dia da semana">
             <button
@@ -438,16 +442,16 @@ onMounted(carregar)
             <div class="cabeca-dia">
               <h2>{{ DIAS[dia] }}<span v-if="numeros">, {{ numeros[dia] }}</span></h2>
               <span v-if="diaDeHoje === dia" class="etiqueta azul">Hoje</span>
+              <input
+                v-if="!emModelo"
+                v-model.lazy="notaDoDia"
+                class="campo nota-dia"
+                placeholder="Nota do dia: feriado, aniversário, viagem…"
+                aria-label="Nota do dia"
+                maxlength="120"
+                @change="salvarNota"
+              />
             </div>
-            <input
-              v-if="!emModelo"
-              v-model.lazy="notaDoDia"
-              class="campo nota-dia"
-              placeholder="Nota do dia: feriado, aniversário, viagem…"
-              aria-label="Nota do dia"
-              maxlength="120"
-              @change="salvarNota"
-            />
             <p v-if="diasEmChoque.has(dia)" class="aviso choque-dia">
               <Icone nome="alerta" /> Tem coisas no mesmo horário (em vermelho). Mova, encurte ou apague uma delas.
             </p>
@@ -498,9 +502,15 @@ onMounted(carregar)
             @bloco="abrirBloco"
             @dia="(d) => ((dia = d), (visao = 'dia'))"
           />
+          </div>
 
-          <!-- ===== Metas ===== -->
-          <h2 class="secao">Metas {{ emModelo ? 'do modelo' : 'da semana' }}</h2>
+          <!-- ===== Metas (painel ao lado) ===== -->
+          <aside class="lateral">
+          <section class="quadro">
+          <div class="quadro-topo">
+            <h2 class="rotulo-secao">Metas {{ emModelo ? 'do modelo' : 'da semana' }}</h2>
+            <button v-if="!emModelo" class="link-acao" :disabled="ocupado" @click="planejar(true)">Refazer pelo modelo</button>
+          </div>
           <p v-if="faltando.length" class="aviso">
             Faltam na {{ emModelo ? 'semana padrão' : 'semana' }}: {{ faltando.map((m) => `${m.atividade.nome} (${m.falta})`).join(', ') }}.
           </p>
@@ -508,23 +518,21 @@ onMounted(carregar)
             <li v-for="m in metas" :key="m.atividade.id" class="meta" :class="`cor-${m.atividade.cor}`">
               <span class="ponto-cor" aria-hidden="true" />
               <span class="nome">{{ m.atividade.nome }}</span>
-              <span class="suave pequeno">{{ duracao(m.tempo || 0) }}</span>
+              <span class="fraco tempo-meta">{{ duracao(m.tempo || 0) }}</span>
               <span class="etiquetas">
                 <span class="etiqueta" :class="{ vermelho: m.estado === 'falta', verde: m.estado === 'ok' }">{{ m.planejados }} de {{ meta(m.atividade) }}{{ m.estado === 'fixa' ? ' · fixa' : '' }}</span>
                 <span v-if="!emModelo && m.feitos" class="etiqueta verde">{{ m.feitos }} {{ m.feitos === 1 ? 'feita' : 'feitas' }}</span>
               </span>
             </li>
           </ul>
-
-          <div v-if="!emModelo" class="linha-acoes rodape-semana">
-            <button class="botao" :disabled="ocupado" @click="planejar(true)">Refazer pelo modelo</button>
-          </div>
-        </template>
+          </section>
+          </aside>
+        </div>
       </template>
 
       <!-- ===== Atividades ===== -->
       <template v-else>
-        <p class="suave modelo-texto">
+        <p class="explicacao">
           A meta é quantas vezes por semana. A prioridade diz o que fica quando a semana aperta: alta primeiro. Fixa é o que não dá para remarcar (o futebol de
           terça): se não acontecer, não aparece como falta.
         </p>
@@ -533,15 +541,6 @@ onMounted(carregar)
             <div class="linha-nome">
               <span class="ponto-cor" aria-hidden="true" />
               <input v-model="a.nome" class="campo" placeholder="Nome" aria-label="Nome da atividade" maxlength="60" />
-              <button
-                class="botao icone"
-                :disabled="noModelo.has(a.id)"
-                :title="noModelo.has(a.id) ? 'Está no modelo: tire os blocos dela antes' : 'Apagar'"
-                aria-label="Apagar atividade"
-                @click="atividadesEdit.splice(i, 1)"
-              >
-                <Icone nome="lixeira" />
-              </button>
             </div>
             <div class="linha-campos">
               <div class="cores" role="radiogroup" aria-label="Cor">
@@ -568,6 +567,15 @@ onMounted(carregar)
               </select>
               <label class="marcar-fixa"><input v-model="a.fixa" type="checkbox" /> Fixa</label>
             </div>
+              <button
+                class="botao icone discreto apagar-atividade"
+                :disabled="noModelo.has(a.id)"
+                :title="noModelo.has(a.id) ? 'Está no modelo: tire os blocos dela antes' : 'Apagar'"
+                aria-label="Apagar atividade"
+                @click="atividadesEdit.splice(i, 1)"
+              >
+                <Icone nome="lixeira" />
+              </button>
           </li>
         </ul>
         <div class="linha-acoes rodape-semana">
@@ -640,12 +648,8 @@ onMounted(carregar)
 </template>
 
 <style scoped>
-.abas {
-  margin-bottom: 18px;
-}
-
-.modelo-texto {
-  margin: 0 0 16px;
+.explicacao {
+  margin-top: calc(-1 * var(--e2));
 }
 
 /* Resultado da voz */
@@ -707,22 +711,24 @@ onMounted(carregar)
   margin: 8px 0 0;
 }
 
-/* Navegar entre semanas */
+/* Navegar entre semanas: ‹ 16 – 22 de nov. › Esta semana, na barra de ferramentas */
 .navegar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 2px;
 }
 
 .qual {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 4px 10px;
-  font-size: 16px;
+  min-width: 118px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.navegar .etiqueta,
+.navegar > .botao:last-child:not(.icone) {
+  margin-left: 6px;
 }
 
 .vazio p {
@@ -746,15 +752,19 @@ onMounted(carregar)
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  margin: 14px 0 6px;
+  margin: 0 0 var(--e4);
+  padding: 4px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
 }
 
 .dia {
   position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 1px;
-  padding: 7px 0 6px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 0;
   border: 1px solid transparent;
   border-radius: var(--raio-p);
   background: transparent;
@@ -767,27 +777,25 @@ onMounted(carregar)
 }
 
 .dia .letra {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .dia .numero {
-  font-size: 16px;
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
   color: var(--texto);
 }
 
-.dia.hoje {
-  border-color: var(--azul);
+.dia.hoje .letra,
+.dia.hoje .numero {
+  color: var(--azul);
 }
 
 .dia.ativo {
-  background: var(--azul);
-  color: var(--fundo);
-}
-
-.dia.ativo .numero {
-  color: var(--fundo);
+  border-color: var(--borda-forte);
+  background: var(--ativo);
+  color: var(--texto);
 }
 
 .dia .ponto {
@@ -800,23 +808,20 @@ onMounted(carregar)
   background: var(--texto-fraco);
 }
 
-.dia.ativo .ponto {
-  background: var(--fundo);
-}
 
 .dia .alerta {
   position: absolute;
-  top: -5px;
-  right: -2px;
+  top: -8px;
+  right: -4px;
   display: grid;
   place-items: center;
-  width: 17px;
-  height: 17px;
+  width: 13px;
+  height: 13px;
   border: 2px solid var(--fundo);
   border-radius: 999px;
   background: var(--vermelho);
   color: var(--fundo);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   box-sizing: content-box;
 }
@@ -824,9 +829,10 @@ onMounted(carregar)
 /* Um dia */
 .cabeca-dia {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  margin: 18px 0 8px;
+  gap: var(--e2) var(--e3);
+  margin: 0 0 var(--e3);
 }
 
 .cabeca-dia h2 {
@@ -834,7 +840,9 @@ onMounted(carregar)
 }
 
 .nota-dia {
-  margin-bottom: 12px;
+  flex: 1 1 220px;
+  max-width: 380px;
+  margin-left: auto;
 }
 
 .choque-dia {
@@ -870,22 +878,22 @@ onMounted(carregar)
   align-items: center;
   gap: 12px;
   min-width: 0;
-  padding: 12px 4px 12px 10px;
+  padding: 9px 4px 9px 10px;
   border: 0;
   background: transparent;
   text-align: left;
   cursor: pointer;
 }
 
-.corpo:hover .nome {
+.bloco > .corpo:hover .nome {
   color: var(--link);
 }
 
 .horario {
   flex-shrink: 0;
-  width: 92px;
+  width: 88px;
   color: var(--texto-suave);
-  font-size: 13.5px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -902,7 +910,7 @@ onMounted(carregar)
 }
 
 .texto .nome {
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 600;
   transition: color var(--transicao);
 }
@@ -932,8 +940,8 @@ onMounted(carregar)
 }
 
 .lixeira svg {
-  width: 19px;
-  height: 19px;
+  width: 17px;
+  height: 17px;
 }
 
 .bloco.feito .nome {
@@ -946,7 +954,7 @@ onMounted(carregar)
 }
 
 .livre {
-  padding: 18px 0;
+  padding: 14px 0;
   border-top: 1px solid var(--borda);
   border-bottom: 1px solid var(--borda);
 }
@@ -962,20 +970,32 @@ onMounted(carregar)
 }
 
 .acoes-dia {
-  margin-top: 14px;
+  margin-top: var(--e3);
 }
 
-/* Metas */
+/* Metas (painel ao lado): uma linha compacta por atividade */
+.quadro .aviso {
+  margin: 0 0 var(--e2);
+}
+
 .meta {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
-  padding: 11px 0;
+  gap: 8px;
+  padding: 7px 0;
+  font-size: 13.5px;
 }
 
 .meta .nome {
-  font-weight: 600;
+  overflow: hidden;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tempo-meta {
+  flex-shrink: 0;
+  font-size: 12px;
 }
 
 .etiquetas {
@@ -985,18 +1005,22 @@ onMounted(carregar)
 }
 
 .rodape-semana {
-  margin-top: 20px;
+  margin-top: var(--e4);
 }
 
-/* Atividades */
+/* Atividades: uma linha por atividade na tela larga (nome, cor, meta, prioridade, fixa) */
 .atividade {
-  display: grid;
-  gap: 8px;
-  padding: 12px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding: 8px 0;
 }
 
 .linha-nome {
   display: flex;
+  flex: 1 1 220px;
+  max-width: 380px;
   align-items: center;
   gap: 10px;
 }
@@ -1006,7 +1030,12 @@ onMounted(carregar)
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  padding-left: 20px;
+}
+
+@media (max-width: 700px) {
+  .linha-campos {
+    padding-left: 20px;
+  }
 }
 
 .cores {
@@ -1026,6 +1055,10 @@ onMounted(carregar)
 .amostra.ativa {
   border-color: var(--fundo);
   box-shadow: 0 0 0 2px var(--texto);
+}
+
+.apagar-atividade {
+  margin-left: auto;
 }
 
 .numero-meta {

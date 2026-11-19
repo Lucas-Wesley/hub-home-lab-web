@@ -75,7 +75,7 @@ onMounted(carregar)
 
 <template>
   <div class="pagina">
-    <div class="cabecalho">
+    <div class="topo-pagina">
       <h1>Rede</h1>
       <button class="botao discreto icone" :disabled="ocupado" aria-label="Atualizar" title="Atualizar" @click="carregar"><Icone nome="atualizar" /></button>
     </div>

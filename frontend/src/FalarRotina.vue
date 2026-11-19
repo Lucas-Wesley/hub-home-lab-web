@@ -49,6 +49,7 @@ onBeforeUnmount(() => parar?.())
 </script>
 
 <template>
+  <div class="falar-caixa">
   <form class="falar" :class="estado" @submit.prevent="enviar">
     <input
       v-model="texto"
@@ -75,26 +76,27 @@ onBeforeUnmount(() => parar?.())
     </button>
   </form>
   <p v-if="estado === 'pensando'" class="suave pensando">O Claude está encaixando na agenda…</p>
+  </div>
 </template>
 
 <style scoped>
+.falar-caixa {
+  position: relative;
+}
+
 .falar {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 16px;
 }
 
 .falar .campo {
   flex: 1;
   min-width: 0;
-  border-radius: 999px;
-  padding-left: 16px;
 }
 
 .mic {
   flex-shrink: 0;
-  background: var(--superficie);
 }
 
 .ouvindo .mic {
@@ -108,7 +110,6 @@ onBeforeUnmount(() => parar?.())
   justify-content: center;
   width: var(--controle);
   padding: 0;
-  border-radius: 999px;
 }
 
 .enviar svg {
@@ -117,8 +118,11 @@ onBeforeUnmount(() => parar?.())
 }
 
 .pensando {
-  margin: -8px 0 16px 16px;
-  font-size: 12.5px;
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 12px;
+  margin: 0;
+  font-size: 12px;
 }
 
 .girando {

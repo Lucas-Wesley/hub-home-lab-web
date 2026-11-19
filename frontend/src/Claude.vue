@@ -121,7 +121,7 @@ onMounted(carregar)
 
 <template>
   <div class="pagina">
-    <div class="cabecalho">
+    <div class="topo-pagina">
       <h1>Claude</h1>
       <button class="botao discreto icone" :disabled="ocupado" aria-label="Medir de novo" title="Medir de novo" @click="carregar"><Icone nome="atualizar" /></button>
     </div>
@@ -133,6 +133,7 @@ onMounted(carregar)
     <div v-if="erro" class="aviso">{{ erro }}</div>
     <p v-else-if="!contas" class="suave">Medindo as contas…</p>
 
+    <div class="quadros contas">
     <section v-for="c in contas" :key="c.id" class="cartao cheio conta" :class="{ ativa: c.ativa }">
       <div class="cabeca">
         <h2>{{ c.nome }} <span v-if="c.ativa" class="etiqueta verde">Ativa</span></h2>
@@ -178,6 +179,7 @@ onMounted(carregar)
         </div>
       </form>
     </section>
+    </div>
   </div>
 </template>
 
