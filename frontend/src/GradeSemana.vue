@@ -80,13 +80,13 @@ const corDe = (b) => props.porId[b.atividade]?.cor ?? (b.titulo ? 'evento' : 'ci
   border: 0;
   background: transparent;
   color: var(--texto-suave);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .coluna.hoje .topo-coluna {
-  color: var(--marca);
+  color: var(--azul);
 }
 
 .ponto {
@@ -110,14 +110,14 @@ const corDe = (b) => props.porId[b.atividade]?.cor ?? (b.titulo ? 'evento' : 'ci
   border-radius: 999px;
   background: var(--vermelho);
   color: var(--fundo);
-  font-size: 0.62rem;
+  font-size: 10.5px;
   font-weight: 800;
 }
 
 .corpo-coluna {
   position: relative;
   height: calc(var(--hora) * var(--horas));
-  background: repeating-linear-gradient(to bottom, var(--linha) 0 1px, transparent 1px var(--hora));
+  background: repeating-linear-gradient(to bottom, var(--borda) 0 1px, transparent 1px var(--hora));
 }
 
 .coluna-horas .corpo-coluna {
@@ -128,7 +128,7 @@ const corDe = (b) => props.porId[b.atividade]?.cor ?? (b.titulo ? 'evento' : 'ci
 
 .hora {
   color: var(--texto-fraco);
-  font-size: 0.66rem;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
   transform: translateY(-5px);
 }
@@ -144,7 +144,7 @@ const corDe = (b) => props.porId[b.atividade]?.cor ?? (b.titulo ? 'evento' : 'ci
   border-radius: 4px;
   background: color-mix(in srgb, var(--cor) 18%, var(--fundo));
   color: var(--texto);
-  font-size: 0.66rem;
+  font-size: 11px;
   line-height: 1.2;
   text-align: left;
   -webkit-hyphens: auto;

@@ -118,9 +118,9 @@ async function planejarTodas() {
 .calendario {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  border-top: 1px solid var(--linha);
-  border-left: 1px solid var(--linha);
-  transition: opacity 0.15s ease;
+  border-top: 1px solid var(--borda);
+  border-left: 1px solid var(--borda);
+  transition: opacity var(--transicao);
 }
 
 .calendario.carregando {
@@ -129,10 +129,10 @@ async function planejarTodas() {
 
 .cabeca {
   padding: 6px 0;
-  border-right: 1px solid var(--linha);
-  border-bottom: 1px solid var(--linha);
+  border-right: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
   color: var(--texto-suave);
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   text-align: center;
 }
@@ -147,8 +147,8 @@ async function planejarTodas() {
   min-height: 84px;
   padding: 4px 3px;
   border: 0;
-  border-right: 1px solid var(--linha);
-  border-bottom: 1px solid var(--linha);
+  border-right: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
   background: var(--fundo);
   text-align: left;
   cursor: pointer;
@@ -176,8 +176,8 @@ async function planejarTodas() {
   align-self: flex-start;
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--marca);
-  color: var(--marca-texto);
+  background: var(--azul);
+  color: var(--fundo);
 }
 
 .alerta {

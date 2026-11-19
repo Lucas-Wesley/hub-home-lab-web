@@ -69,7 +69,7 @@ onBeforeUnmount(() => parar?.())
     >
       <Icone :nome="estado === 'ouvindo' ? 'parar' : 'microfone'" />
     </button>
-    <button class="botao principal enviar" :disabled="!texto.trim() || estado !== 'parado'" aria-label="Adicionar">
+    <button class="botao primario enviar" :disabled="!texto.trim() || estado !== 'parado'" aria-label="Adicionar">
       <span v-if="estado === 'pensando'" class="girando" aria-hidden="true" />
       <Icone v-else nome="enviar" />
     </button>
@@ -106,8 +106,7 @@ onBeforeUnmount(() => parar?.())
 .enviar {
   flex-shrink: 0;
   justify-content: center;
-  width: 38px;
-  min-height: 38px;
+  width: var(--controle);
   padding: 0;
   border-radius: 999px;
 }
@@ -119,7 +118,7 @@ onBeforeUnmount(() => parar?.())
 
 .pensando {
   margin: -8px 0 16px 16px;
-  font-size: 0.82rem;
+  font-size: 12.5px;
 }
 
 .girando {

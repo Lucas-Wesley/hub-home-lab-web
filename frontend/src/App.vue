@@ -11,6 +11,7 @@ import Rede from './Rede.vue'
 import Rotina from './Rotina.vue'
 import Servidor from './Servidor.vue'
 import { api } from './api.js'
+import { aplicarTema, lerTema, proximoTema } from './tema.js'
 
 // Rotas no hash, como nos outros apps: o "voltar" do celular volta para a tela anterior.
 const hash = ref(location.hash)
@@ -47,6 +48,14 @@ function aoMudarHash() {
   hash.value = location.hash
 }
 
+const tema = ref(lerTema())
+const NOMES_TEMA = { auto: 'Tema do aparelho', claro: 'Tema claro', escuro: 'Tema escuro' }
+const ICONES_TEMA = { auto: 'auto', claro: 'sol', escuro: 'lua' }
+function trocarTema() {
+  tema.value = proximoTema(tema.value)
+  aplicarTema(tema.value)
+}
+
 let tempoDoRecado
 function mostrarRecado(texto, erro = false) {
   recado.value = { texto, erro }
@@ -56,6 +65,7 @@ function mostrarRecado(texto, erro = false) {
 provide('recado', mostrarRecado)
 
 onMounted(async () => {
+  aplicarTema(tema.value)
   window.addEventListener('hashchange', aoMudarHash)
   try {
     versao.value = (await api('/api/health', { tempo: 4000 })).version
@@ -70,21 +80,31 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="app">
+  <header class="barra">
+    <a class="marca" href="#/inicio">
+      <span class="marca-icone"><Icone nome="hub" :tamanho="18" /></span>
+      <span>Hub</span>
+    </a>
+    <div class="barra-direita">
+      <button class="botao discreto icone" :title="NOMES_TEMA[tema]" :aria-label="NOMES_TEMA[tema]" @click="trocarTema">
+        <Icone :nome="ICONES_TEMA[tema]" />
+      </button>
+    </div>
+  </header>
+
+  <div class="corpo">
     <aside class="menu" aria-label="Menu">
-      <div class="marca"><span class="marca-icone"><Icone nome="hub" /></span>Hub</div>
       <nav>
         <button
           v-for="item in MENU"
           :key="item.rota"
-          class="item"
+          class="nav-item"
           :class="{ ativo: rota.nome === item.rota }"
           :aria-current="rota.nome === item.rota ? 'page' : undefined"
           @click="ir(item.rota)"
         >
-          <Icone :nome="item.icone" />
-          <span class="nome" :class="{ 'tem-curto': item.curto }">{{ item.nome }}</span>
-          <span v-if="item.curto" class="nome curto" aria-hidden="true">{{ item.curto }}</span>
+          <Icone :nome="item.icone" :tamanho="18" />
+          <span>{{ item.nome }}</span>
         </button>
       </nav>
       <div class="rodape">{{ versao ? `versão ${versao.slice(0, 7)}` : 'sem conexão' }}</div>
@@ -101,162 +121,127 @@ onBeforeUnmount(() => {
       <Aplicacoes v-else-if="rota.nome === 'aplicacoes'" />
       <Inicio v-else />
     </main>
-
-    <Transition name="recado">
-      <div v-if="recado" class="recado vidro" :class="{ erro: recado.erro }" role="status">{{ recado.texto }}</div>
-    </Transition>
   </div>
+
+  <Transition name="recado">
+    <div v-if="recado" class="recado" :class="{ erro: recado.erro }" role="status">{{ recado.texto }}</div>
+  </Transition>
+
+  <nav class="abas-celular" aria-label="Seções">
+    <a
+      v-for="item in MENU"
+      :key="item.rota"
+      :href="`#/${item.rota}`"
+      :class="{ ativa: rota.nome === item.rota }"
+      :aria-current="rota.nome === item.rota ? 'page' : undefined"
+    >
+      <Icone :nome="item.icone" :tamanho="20" />
+      <span class="nome" :class="{ 'tem-curto': item.curto }">{{ item.nome }}</span>
+      <span v-if="item.curto" class="nome curto" aria-hidden="true">{{ item.curto }}</span>
+    </a>
+  </nav>
 </template>
 
 <style scoped>
-.app {
-  min-height: 100vh;
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--e4);
+  height: var(--barra);
+  padding: 0 var(--e5);
+  background: var(--fundo);
+  border-bottom: 1px solid var(--borda);
 }
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  font-family: var(--fonte-titulo);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--texto);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.marca-icone { display: inline-flex; color: var(--texto); }
+.barra-direita { display: flex; align-items: center; gap: var(--e2); margin-left: auto; }
+
+.corpo { display: flex; }
 
 .menu {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 20;
+  position: sticky;
+  top: var(--barra);
+  flex: none;
   display: flex;
   flex-direction: column;
-  width: 216px;
-  padding: max(28px, env(safe-area-inset-top)) 12px 16px;
-  border-right: 1px solid var(--linha);
-  background: var(--lateral);
+  width: var(--nav);
+  height: calc(100vh - var(--barra));
+  padding: var(--e4) var(--e3) var(--e6) var(--e4);
+  overflow-y: auto;
+  border-right: 1px solid var(--borda);
 }
-
-/* A cor do app aparece aqui, no item ativo e no botão principal. */
-.marca {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 8px 24px;
-  font-size: 1.02rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-}
-
-.marca-icone {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--marca);
-  color: var(--marca-texto);
-}
-
-.marca-icone svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 1.9;
-}
-
-nav {
-  display: grid;
-  gap: 1px;
-}
-
-.item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-height: 34px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--raio-p);
-  background: transparent;
-  color: var(--texto-suave);
-  font-size: 0.9rem;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.item:hover {
-  background: var(--linha);
-  color: var(--texto);
-}
-
-.item.ativo {
-  background: var(--item-ativo);
-  box-shadow: 0 0 0 1px var(--linha), 0 1px 2px rgb(23 25 30 / 5%);
-  color: var(--texto);
-  font-weight: 600;
-}
-
-.item.ativo svg {
-  color: var(--marca);
-}
-
-
-.curto {
-  display: none;
-}
+.menu nav { display: grid; gap: 1px; }
 
 .rodape {
   margin-top: auto;
-  padding: 0 10px;
+  padding: var(--e3) var(--e2) 0;
   color: var(--texto-fraco);
-  font-size: 0.72rem;
+  font-size: 12.5px;
 }
 
 .conteudo {
-  margin-left: 216px;
-  min-height: 100vh;
-}
-
-
-.recado {
-  position: fixed;
-  left: 50%;
-  bottom: calc(24px + env(safe-area-inset-bottom));
-  z-index: 40;
-  max-width: calc(100% - 32px);
-  padding: 10px 16px;
-  border: 1px solid var(--vidro-borda);
-  border-radius: 999px;
-  box-shadow: var(--sombra);
-  font-size: 0.88rem;
-  transform: translateX(-50%);
-}
-
-.recado.erro {
-  color: var(--vermelho);
+  flex: 1;
+  min-width: 0;
+  min-height: calc(100vh - var(--barra));
 }
 
 .recado-enter-active,
 .recado-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
 .recado-enter-from,
 .recado-leave-to {
   opacity: 0;
   transform: translate(-50%, 8px);
 }
 
-/* Celular: o menu vira uma barra de abas de vidro no pé da tela. */
-@media (max-width: 820px) {
-  .menu {
-    inset: auto 0 0 0;
-    width: auto;
-    padding: 6px 8px max(6px, env(safe-area-inset-bottom));
-    border-right: 0;
-    border-top: 1px solid var(--linha);
-    background: var(--vidro);
-    -webkit-backdrop-filter: var(--blur);
-    backdrop-filter: var(--blur);
-  }
+.abas-celular { display: none; }
 
-  .marca,
-  .rodape {
-    display: none;
+@media (max-width: 899px) {
+  .barra { padding: 0 var(--e3); gap: var(--e2); }
+  .menu { display: none; }
+
+  .abas-celular {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    padding: var(--e1) var(--e2) calc(var(--e1) + env(safe-area-inset-bottom));
+    background: var(--fundo);
+    border-top: 1px solid var(--borda);
   }
+  .abas-celular a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--texto-fraco);
+    text-decoration: none;
+    border-radius: var(--raio-p);
+  }
+  .abas-celular a.ativa { color: var(--texto); background: var(--superficie-2); }
 
   /* Nove abas numa linha: o nome longo dá lugar ao curto (o leitor de tela continua lendo o longo). */
-  .nome.tem-curto {
+  .abas-celular .nome.tem-curto {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -264,56 +249,11 @@ nav {
     clip-path: inset(50%);
   }
 
-  .curto {
-    display: inline;
-  }
-
-  nav {
-    grid-template-columns: repeat(9, 1fr);
-  }
-
-  .item {
-    position: relative;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
-    min-height: 48px;
-    padding: 4px 0 2px;
-    font-size: 0.66rem;
-    font-weight: 500;
-  }
-
-  .item.ativo,
-  .item:hover {
-    background: transparent;
-    box-shadow: none;
-    font-weight: 600;
-  }
-
-  .item.ativo {
-    color: var(--marca);
-  }
-
-
-  .conteudo {
-    margin-left: 0;
-  }
-
-  .recado {
-    bottom: calc(80px + env(safe-area-inset-bottom));
-  }
+  .recado { bottom: calc(80px + env(safe-area-inset-bottom)); }
 }
 
 /* Celular estreito: nove nomes só cabem com a letra um pouco menor. */
 @media (max-width: 420px) {
-  .item {
-    font-size: 0.58rem;
-    letter-spacing: -0.02em;
-  }
-
-  .item svg {
-    width: 20px;
-    height: 20px;
-  }
+  .abas-celular a { font-size: 9px; letter-spacing: -0.02em; }
 }
 </style>

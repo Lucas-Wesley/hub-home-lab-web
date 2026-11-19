@@ -54,25 +54,25 @@ onMounted(() => carregar())
 
 <template>
   <div class="pagina">
-    <div class="cabeca">
+    <div class="cabecalho">
       <h1>Armazenamento</h1>
-      <button class="botao icone" :disabled="medindo" aria-label="Medir de novo" title="Medir de novo" @click="carregar(true)">
+      <button class="botao discreto icone" :disabled="medindo" aria-label="Medir de novo" title="Medir de novo" @click="carregar(true)">
         <Icone nome="atualizar" />
       </button>
     </div>
 
-    <div v-if="erro" class="aviso erro">{{ erro }}</div>
+    <div v-if="erro" class="aviso">{{ erro }}</div>
     <p v-else-if="!dados" class="suave">Medindo…</p>
 
     <template v-if="dados">
-      <div v-if="vmQuaseCheia" class="aviso erro">O disco da VM apps passou de {{ Math.round(QUASE_CHEIO * 100) }}%.</div>
-      <div v-if="cacheParaLimpar > 1024 ** 3" class="aviso">
+      <div v-if="vmQuaseCheia" class="aviso">O disco da VM apps passou de {{ Math.round(QUASE_CHEIO * 100) }}%.</div>
+      <div v-if="cacheParaLimpar > 1024 ** 3" class="aviso neutro">
         O Docker guarda {{ bytes(cacheParaLimpar) }} que podem ser liberados, quase tudo cache dos builds de deploy.
         <a href="#/limpeza">Ir para Limpeza</a>
       </div>
 
       <!-- Disco físico e armazenamentos do Proxmox -->
-      <p class="rotulo">Servidor (Proxmox)</p>
+      <h2 class="secao">Servidor (Proxmox)</h2>
       <template v-if="proxmox">
         <div class="lista">
           <Medidor
@@ -90,18 +90,18 @@ onMounted(() => carregar())
               <span class="titulo">{{ d.modelo || d.caminho }}</span>
               <span class="suave pequeno">{{ bytes(d.tamanho) }}, {{ d.tipo }}</span>
             </span>
-            <span class="chips">
-              <span class="chip" :class="d.saude === 'PASSED' || d.saude === 'OK' ? 'ok' : 'erro'">Saúde {{ d.saude }}</span>
-              <span v-if="d.vida_util >= 0" class="chip" :class="{ erro: d.vida_util < 20 }">{{ d.vida_util }}% de vida útil</span>
+            <span class="etiquetas">
+              <span class="etiqueta" :class="d.saude === 'PASSED' || d.saude === 'OK' ? 'verde' : 'vermelho'">Saúde {{ d.saude }}</span>
+              <span v-if="d.vida_util >= 0" class="etiqueta" :class="{ vermelho: d.vida_util < 20 }">{{ d.vida_util }}% de vida útil</span>
             </span>
           </li>
         </ul>
       </template>
-      <div v-else-if="servidor?.proxmox_erro" class="aviso erro">{{ servidor.proxmox_erro }}</div>
-      <div v-else class="aviso">O Proxmox ainda não está ligado ao painel. <a href="#/servidor">Veja como ligar</a></div>
+      <div v-else-if="servidor?.proxmox_erro" class="aviso">{{ servidor.proxmox_erro }}</div>
+      <div v-else class="aviso neutro">O Proxmox ainda não está ligado ao painel. <a href="#/servidor">Veja como ligar</a></div>
 
       <!-- Disco da VM, em partes -->
-      <p class="rotulo">VM apps</p>
+      <h2 class="secao">VM apps</h2>
       <div v-if="disco" class="vm">
         <p class="numero">{{ bytes(disco.usado) }} <span class="de">de {{ bytes(disco.total) }}</span></p>
         <p class="suave pequeno">{{ bytes(disco.livre) }} livres, {{ porcento(disco.usado, disco.total) }}% em uso</p>
@@ -122,11 +122,11 @@ onMounted(() => carregar())
           </li>
         </ul>
       </div>
-      <div v-else class="aviso erro">{{ dados.disco_erro }}</div>
+      <div v-else class="aviso">{{ dados.disco_erro }}</div>
 
       <!-- Por app -->
-      <p class="rotulo">Por app</p>
-      <div v-if="dados.apps_erro" class="aviso erro">{{ dados.apps_erro }}</div>
+      <h2 class="secao">Por app</h2>
+      <div v-if="dados.apps_erro" class="aviso">{{ dados.apps_erro }}</div>
       <ul v-else class="lista">
         <li v-for="a in dados.apps" :key="a.nome" class="por-app">
           <button class="linha linha-botao" :aria-expanded="!!aberto[a.nome]" @click="aberto[a.nome] = !aberto[a.nome]">
@@ -145,7 +145,7 @@ onMounted(() => carregar())
       </ul>
 
       <!-- Docker -->
-      <p class="rotulo">Docker</p>
+      <h2 class="secao">Docker</h2>
       <ul v-if="docker" class="lista">
         <li class="linha">
           <span>Imagens</span>
@@ -154,7 +154,7 @@ onMounted(() => carregar())
         <li class="linha">
           <span>
             Cache de build
-            <span v-if="docker.cache_liberavel" class="chip">{{ bytes(docker.cache_liberavel) }} para liberar</span>
+            <span v-if="docker.cache_liberavel" class="etiqueta">{{ bytes(docker.cache_liberavel) }} para liberar</span>
           </span>
           <span class="valor">{{ bytes(docker.cache_de_build) }}</span>
         </li>
@@ -163,7 +163,7 @@ onMounted(() => carregar())
           <span class="valor">{{ bytes(docker.imagens_soltas) }}</span>
         </li>
       </ul>
-      <div v-else class="aviso erro">{{ dados.docker_erro }}</div>
+      <div v-else class="aviso">{{ dados.docker_erro }}</div>
 
       <p class="medido suave">Medido em {{ dataHora(dados.medido_em) }}. As pastas são medidas de novo a cada minuto.</p>
     </template>
@@ -171,22 +171,12 @@ onMounted(() => carregar())
 </template>
 
 <style scoped>
-.cabeca {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
 .aviso {
   margin-bottom: 10px;
 }
 
-.rotulo:first-of-type {
-  margin-top: 8px;
-}
-
-.pequeno {
-  font-size: 0.82rem;
+h2.secao:first-of-type {
+  margin-top: var(--e2);
 }
 
 .linha {
@@ -213,7 +203,7 @@ onMounted(() => carregar())
 }
 
 .linha-botao:hover .titulo {
-  color: var(--marca);
+  color: var(--link);
 }
 
 .titulo {
@@ -223,12 +213,12 @@ onMounted(() => carregar())
 
 .valor {
   color: var(--texto-suave);
-  font-size: 0.9rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.chips {
+.etiquetas {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -243,41 +233,32 @@ onMounted(() => carregar())
   margin: 0 0 10px;
   padding: 0 0 0 14px;
   list-style: none;
-  border-left: 2px solid var(--linha);
+  border-left: 2px solid var(--borda);
 }
 
 .itens .linha {
   padding: 6px 0;
-  font-size: 0.9rem;
+  font-size: 13.5px;
 }
 
-/* Cores das partes do disco: as quatro primeiras da paleta categórica, validadas nos dois temas. */
+/* Cores das partes do disco: as quatro primeiras da paleta categórica (rotina). */
 .vm {
-  --serie-1: #2a78d6;
-  --serie-2: #eb6834;
-  --serie-3: #1baf7a;
-  --serie-4: #eda100;
-}
-
-@media (prefers-color-scheme: dark) {
-  .vm {
-    --serie-1: #3987e5;
-    --serie-2: #d95926;
-    --serie-3: #199e70;
-    --serie-4: #c98500;
-  }
+  --serie-1: var(--r-azul);
+  --serie-2: var(--r-laranja);
+  --serie-3: var(--r-verde);
+  --serie-4: var(--r-amarelo);
 }
 
 .numero {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .de {
   color: var(--texto-suave);
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: 0;
 }
@@ -315,7 +296,7 @@ onMounted(() => carregar())
 }
 
 .livre {
-  background: var(--superficie-forte);
+  background: var(--superficie-2);
 }
 
 .legenda {
@@ -324,7 +305,7 @@ onMounted(() => carregar())
   margin: 14px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 0.9rem;
+  font-size: 13.5px;
 }
 
 .legenda li {
@@ -342,6 +323,6 @@ onMounted(() => carregar())
 
 .medido {
   margin-top: 28px;
-  font-size: 0.8rem;
+  font-size: 12.5px;
 }
 </style>

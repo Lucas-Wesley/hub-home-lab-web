@@ -17,8 +17,8 @@ export default defineConfig({
         name: 'Hub',
         short_name: 'Hub',
         lang: 'pt-BR',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#151515',
+        background_color: '#151515',
         display: 'standalone',
         start_url: '/',
         icons: [

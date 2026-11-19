@@ -105,9 +105,9 @@ Como isso ficou na prática, com a Biblioteca e o Acervo:
 - **Publicar:** `git push` na main e `./deploy.sh` de cada app.
   - O script roda os testes, constrói na VM, confere a saúde e volta ao commit anterior se falhar.
   - Segredos ficam em `/opt/apps/<app>.env`, fora do git.
-- **Visual:** design system comum (neutros, azul e terracota só como contraste, vidro com blur,
-  listas finas, Literata na leitura). A especificação fica em `docs/DESIGN-SYSTEM.md` de cada app,
-  igual em todas.
+- **Visual:** design system comum nascido na Trilha de Estudo (estilo Claude Platform: neutros
+  escuros, serifa nos títulos, cor só em estado). A especificação fica em `docs/DESIGN-SYSTEM.md`
+  de cada app, igual em todas; a vitrine viva fica em `#/design` da Trilha.
 - **Ajustes e sugestões de melhoria:** toda app tem **Ajustes** no fim do menu, com a seção
   **Sugestões de melhoria**. O Lucas anota ali o que pode melhorar; depois pede ao Claude Code para
   ver as sugestões, e ele lê, faz e responde. A API é a mesma em todas (campos em português):

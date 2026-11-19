@@ -1,6 +1,7 @@
 <script setup>
 import { computed, inject, onMounted, ref } from 'vue'
 import Icone from './Icone.vue'
+import Internet from './Internet.vue'
 import { api } from './api.js'
 import { dataHora, porcento } from './formato.js'
 
@@ -74,18 +75,21 @@ onMounted(carregar)
 
 <template>
   <div class="pagina">
-    <div class="titulo">
+    <div class="cabecalho">
       <h1>Rede</h1>
-      <button class="botao icone" :disabled="ocupado" aria-label="Atualizar" title="Atualizar" @click="carregar"><Icone nome="atualizar" /></button>
+      <button class="botao discreto icone" :disabled="ocupado" aria-label="Atualizar" title="Atualizar" @click="carregar"><Icone nome="atualizar" /></button>
     </div>
+    <Internet />
+
+    <h2 class="secao">Bloqueio de anúncios (AdGuard)</h2>
     <p class="suave explicacao">
       O AdGuard Home é o DNS da casa: bloqueia anúncios e rastreadores em todos os aparelhos. Se um site ou app parar de abrir, pause o bloqueio. Se
       voltar a abrir, a culpa era dele: ache o domínio em "Bloqueados agora" e libere. Pausado, o DNS continua respondendo, só sem bloquear.
     </p>
 
-    <div v-if="erro" class="aviso erro">{{ erro }}</div>
-    <div v-else-if="resposta && !resposta.ligado" class="aviso erro">O AdGuard não está ligado ao Hub (falta a senha do usuário hub no hub.env).</div>
-    <div v-else-if="resposta?.erro" class="aviso erro">{{ resposta.erro }}</div>
+    <div v-if="erro" class="aviso">{{ erro }}</div>
+    <div v-else-if="resposta && !resposta.ligado" class="aviso">O AdGuard não está ligado ao Hub (falta a senha do usuário hub no hub.env).</div>
+    <div v-else-if="resposta?.erro" class="aviso">{{ resposta.erro }}</div>
 
     <template v-if="rede">
       <section class="estado" :class="{ pausado: !rede.protecao }">
@@ -101,22 +105,22 @@ onMounted(carregar)
             {{ rede.bloqueadas.toLocaleString('pt-BR') }} bloqueadas ({{ porcento(rede.bloqueadas, rede.consultas) }}%)
           </p>
         </div>
-        <button v-if="!rede.protecao" class="botao principal" :disabled="ocupado" @click="religar">Religar o bloqueio</button>
+        <button v-if="!rede.protecao" class="botao primario" :disabled="ocupado" @click="religar">Religar o bloqueio</button>
         <div v-else class="pausar">
-          <span class="suave pequeno">Pausar</span>
-          <div class="pilulas">
-            <button v-for="p in PAUSAS" :key="p.minutos" class="pilula" :disabled="ocupado" @click="pausar(p)">{{ p.nome }}</button>
+          <span class="pequeno">Pausar</span>
+          <div class="abas">
+            <button v-for="p in PAUSAS" :key="p.minutos" :disabled="ocupado" @click="pausar(p)">{{ p.nome }}</button>
           </div>
         </div>
       </section>
 
-      <p class="rotulo">Liberar um domínio</p>
+      <h2 class="secao">Liberar um domínio</h2>
       <form class="liberar" @submit.prevent="liberarDigitado">
         <input v-model="dominio" class="campo" placeholder="exemplo.com ou o link inteiro" autocapitalize="off" autocomplete="off" spellcheck="false" aria-label="Domínio" />
         <button class="botao" :disabled="ocupado || !dominio.trim()">Liberar</button>
       </form>
 
-      <p class="rotulo">Bloqueados agora</p>
+      <h2 class="secao">Bloqueados agora</h2>
       <ul v-if="rede.recentes.length" class="lista">
         <li v-for="b in rede.recentes" :key="b.dominio" class="linha">
           <span class="esquerda">
@@ -128,7 +132,7 @@ onMounted(carregar)
       </ul>
       <p v-else class="suave pequeno">Nada bloqueado ainda.</p>
 
-      <p class="rotulo">Liberados</p>
+      <h2 class="secao">Liberados</h2>
       <ul v-if="rede.liberados.length" class="lista">
         <li v-for="d in rede.liberados" :key="d" class="linha">
           <span class="dominio">{{ d }}</span>
@@ -138,7 +142,7 @@ onMounted(carregar)
       <p v-else class="suave pequeno">Nenhum domínio liberado.</p>
 
       <template v-if="rede.mais_bloqueados.length">
-        <p class="rotulo">Mais bloqueados nas últimas 24 h</p>
+        <h2 class="secao">Mais bloqueados nas últimas 24 h</h2>
         <ul class="lista">
           <li v-for="c in rede.mais_bloqueados" :key="c.dominio" class="linha">
             <span class="dominio">{{ c.dominio }}</span>
@@ -155,21 +159,10 @@ onMounted(carregar)
 </template>
 
 <style scoped>
-.titulo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .explicacao {
   margin: 0 0 14px;
-  font-size: 0.88rem;
+  font-size: 14px;
   line-height: 1.5;
-}
-
-.pequeno {
-  font-size: 0.82rem;
 }
 
 .estado {
@@ -179,9 +172,9 @@ onMounted(carregar)
   justify-content: space-between;
   gap: 12px 20px;
   padding: 16px;
-  border: 1px solid var(--linha);
+  border: 1px solid var(--borda);
   border-radius: var(--raio);
-  background: var(--marca-fundo);
+  background: var(--superficie);
 }
 
 .estado.pausado {
@@ -193,7 +186,7 @@ onMounted(carregar)
   align-items: center;
   gap: 8px;
   margin: 0 0 4px;
-  font-size: 1.1rem;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -201,7 +194,7 @@ onMounted(carregar)
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--marca);
+  background: var(--azul);
 }
 
 .pausado .ponto {
@@ -210,19 +203,13 @@ onMounted(carregar)
 
 .numeros {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
 }
 
 .pausar {
   display: grid;
   gap: 6px;
-}
-
-.pilulas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
 }
 
 .liberar {
@@ -255,7 +242,7 @@ onMounted(carregar)
 
 .valor {
   color: var(--texto-suave);
-  font-size: 0.9rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
 }
 

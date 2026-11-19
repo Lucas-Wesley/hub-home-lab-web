@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
 
     <div
       v-if="menu.aberto"
-      class="menu-blocos vidro"
+      class="menu-blocos"
       role="listbox"
       aria-label="Blocos"
       :style="{ left: `${menu.x}px`, top: `${menu.y}px` }"
@@ -172,8 +172,8 @@ onBeforeUnmount(() => {
 .folha :deep(.ProseMirror) {
   min-height: calc(100vh - 140px);
   outline: none;
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.7;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
@@ -187,10 +187,10 @@ onBeforeUnmount(() => {
 .folha :deep(h1) {
   margin: 0;
   padding: 18px 0 4px;
-  font-size: 1.45rem;
-  font-weight: 700;
+  font-family: var(--fonte-titulo);
+  font-size: 23px;
+  font-weight: 500;
   line-height: 1.3;
-  letter-spacing: -0.02em;
 }
 
 .folha :deep(.ProseMirror > h1:first-child) {
@@ -246,7 +246,7 @@ onBeforeUnmount(() => {
   width: 16px;
   height: 16px;
   margin: 0;
-  accent-color: var(--marca);
+  accent-color: var(--link);
   cursor: pointer;
 }
 
@@ -320,9 +320,9 @@ onBeforeUnmount(() => {
   display: grid;
   width: 220px;
   padding: 5px;
-  border: 1px solid var(--linha);
+  border: 1px solid var(--borda);
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
+  background: var(--superficie);
 }
 
 .opcao {
@@ -340,13 +340,7 @@ onBeforeUnmount(() => {
 }
 
 .opcao[aria-selected='true'] {
-  background: var(--superficie-forte);
-}
-
-kbd {
-  color: var(--texto-fraco);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.78rem;
+  background: var(--ativo);
 }
 
 @media (pointer: coarse) {

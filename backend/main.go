@@ -50,6 +50,7 @@ func main() {
 	}
 	go a.agendaDeLimpeza(ctx)
 	go a.vigiar(ctx)
+	go a.vigiarInternet(ctx)
 
 	web, err := fs.Sub(webDist, "web/dist")
 	if err != nil {
@@ -89,7 +90,7 @@ func abrirBanco(caminho string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := db.Exec(esquema); err != nil {
+	if _, err := db.Exec(esquema + esquemaInternet); err != nil {
 		db.Close()
 		return nil, err
 	}

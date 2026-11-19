@@ -125,8 +125,8 @@ test('Rotina: adiciona pela fala sem tirar nada, avisa o choque com "!", apaga p
   await page.getByRole('tab', { name: 'Terça' }).click()
   page.once('dialog', (d) => d.accept())
   await page.getByRole('button', { name: 'Limpar o dia' }).click()
-  await expect(page.locator('.aviso.erro', { hasText: 'Faltam' })).toBeVisible()
-  await expect(page.locator('.aviso.erro', { hasText: 'Futebol' })).toHaveCount(0)
+  await expect(page.locator('.aviso:not(.neutro)', { hasText: 'Faltam' })).toBeVisible()
+  await expect(page.locator('.aviso:not(.neutro)', { hasText: 'Futebol' })).toHaveCount(0)
   await expect(page.locator('.meta', { hasText: 'Futebol' }).getByText('0 de 1× · fixa')).toBeVisible()
 
   // A fala vira um evento na próxima quinta, das 7h às 10h: choca com o inglês e o trabalho.
@@ -298,4 +298,31 @@ test('Claude mostra onde deveria estar na janela e quando acaba no ritmo atual',
   await expect(pessoal.locator('.ideal').nth(1)).toHaveAttribute('title', 'Ideal agora: 27%')
   await expect(pessoal.getByText(/Acima do ritmo: o ideal agora seria 27%\. Assim acaba qui\., 19 de nov\., 2\d:\d\d, 4 dias antes de zerar/)).toBeVisible()
   await expect(page.locator('.conta', { hasText: 'Empresa' }).getByText(/Dentro do ritmo: o ideal agora seria 27%\. Assim termina em ~37%/)).toBeVisible()
+})
+
+test('Rede mostra onde a internet parou e as quedas com o registro do roteador', async ({ page }) => {
+  const agora = Date.now()
+  const iso = (s) => new Date(agora - s * 1000).toISOString().replace(/\.\d+Z$/, 'Z')
+  await page.route('**/api/internet', (r) =>
+    r.fulfill({
+      json: {
+        ligada: true,
+        intervalo: 10,
+        servidor: { sensor: 'servidor', em: iso(2), roteador: -1 + 3, gateway: -1, internet: -1, internet6: -2, dns: 4, causa: 'claro' },
+        wan: { ligada: true, ipv4: '', gateway: '187.65.176.1', desde: 0 },
+        mac: { sensor: 'mac', em: iso(5), roteador: 4, gateway: -2, internet: -1, internet6: -1, dns: 3, causa: 'internet' },
+        quedas: [
+          { sensor: 'servidor', inicio: iso(130), causa: 'claro', segundos: 130, registro: [`${iso(128)} roteador netifd: Network device 'wan' link is down`] },
+          { sensor: 'mac', inicio: iso(5 * 3600), fim: iso(5 * 3600 - 540), causa: 'so-wifi', segundos: 540 },
+        ],
+      },
+    }),
+  )
+  await page.goto('/#/rede')
+  await expect(page.getByText('Sem internet: Claro ou modem')).toBeVisible()
+  await expect(page.getByText(/Tire só o modem da Claro/).first()).toBeVisible()
+  await expect(page.getByText('7 dias: 2 quedas, 11 min fora · Claro ou modem: 1 · Só no Wi-Fi: 1')).toBeVisible()
+  await page.getByRole('button', { name: /fora há 2 min/ }).click()
+  await expect(page.getByText(/link is down/)).toBeVisible()
+  if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT, fullPage: true })
 })

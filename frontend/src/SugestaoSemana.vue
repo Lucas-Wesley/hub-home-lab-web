@@ -42,26 +42,26 @@ async function pedir(refazer) {
 
 <template>
   <section class="sugestao">
-    <h2 class="rotulo">Sugestão da IA</h2>
-    <p class="descricao-da-pagina">
+    <h2 class="secao">Sugestão da IA</h2>
+    <p class="suave descricao">
       O Claude monta um rascunho de semana com as atividades e metas acima, mesmo sem salvar. Os compromissos (trabalho, futebol, namorada) ficam onde estão no modelo.
     </p>
-    <p v-if="!ligada" class="aviso">A IA não está ligada neste Hub.</p>
+    <p v-if="!ligada" class="aviso neutro">A IA não está ligada neste Hub.</p>
     <template v-else>
       <button v-if="!blocos" class="botao" :disabled="pensando" @click="pedir(false)">
         <Icone nome="faisca" /> {{ pensando ? 'Montando a semana… (até 2 min)' : 'Ver a semana sugerida' }}
       </button>
 
       <template v-if="blocos">
-        <p class="aviso explicacao">{{ explicacao }}</p>
+        <p class="aviso neutro explicacao">{{ explicacao }}</p>
         <GradeSemana :blocos="blocos" :por-id="porId" />
         <div class="metas">
-          <span v-for="m in metas" :key="m.atividade.id" class="chip" :class="{ erro: m.estado === 'falta', ok: m.estado === 'ok' }">
+          <span v-for="m in metas" :key="m.atividade.id" class="etiqueta" :class="{ vermelho: m.estado === 'falta', verde: m.estado === 'ok' }">
             {{ m.atividade.nome }} {{ m.planejados }}/{{ meta(m.atividade) }}
           </span>
         </div>
         <label class="comentario">
-          <span class="rotulo-campo">Pedir de novo, com um comentário</span>
+          <span class="rotulo">Pedir de novo, com um comentário</span>
           <textarea
             v-model="comentario"
             class="campo"
@@ -99,16 +99,14 @@ async function pedir(refazer) {
   margin: 12px 0;
 }
 
-.comentario {
-  display: grid;
-  gap: 5px;
-  margin-bottom: 10px;
+.descricao {
+  margin: 0 0 12px;
+  font-size: 14px;
 }
 
-.rotulo-campo {
-  color: var(--texto-suave);
-  font-size: 0.81rem;
-  font-weight: 600;
+.comentario {
+  display: grid;
+  margin-bottom: 10px;
 }
 
 textarea.campo {

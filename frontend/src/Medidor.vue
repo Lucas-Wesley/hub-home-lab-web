@@ -17,7 +17,7 @@ const cheio = computed(() => fracao.value >= QUASE_CHEIO)
 <template>
   <div class="medidor" :class="{ cheio }">
     <div class="topo">
-      <span class="nome">{{ nome }} <span v-if="cheio" class="chip erro">Quase cheio</span></span>
+      <span class="nome">{{ nome }} <span v-if="cheio" class="etiqueta vermelho">Quase cheio</span></span>
       <span class="valor">{{ bytes(usado) }} de {{ bytes(total) }}</span>
     </div>
     <div
@@ -58,7 +58,7 @@ const cheio = computed(() => fracao.value >= QUASE_CHEIO)
 
 .valor {
   color: var(--texto-suave);
-  font-size: 0.88rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -88,6 +88,6 @@ const cheio = computed(() => fracao.value >= QUASE_CHEIO)
 .detalhe {
   margin: 6px 0 0;
   color: var(--texto-suave);
-  font-size: 0.82rem;
+  font-size: 12.5px;
 }
 </style>

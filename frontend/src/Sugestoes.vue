@@ -57,11 +57,11 @@ onMounted(carregar)
   <section class="sugestoes">
     <form class="nova" @submit.prevent="enviar">
       <textarea v-model="texto" class="campo" rows="3" placeholder="O que pode melhorar no app?" aria-label="Sugestão de melhoria" />
-      <div class="linha-acoes">
-        <button class="botao principal" :disabled="enviando || !texto.trim()">{{ enviando ? 'Enviando…' : 'Enviar sugestão' }}</button>
+      <div class="linha">
+        <button class="botao primario" :disabled="enviando || !texto.trim()">{{ enviando ? 'Enviando…' : 'Enviar sugestão' }}</button>
       </div>
     </form>
-    <div v-if="erro" class="aviso erro">{{ erro }}</div>
+    <div v-if="erro" class="aviso">{{ erro }}</div>
 
     <ul v-if="sugestoes.length" class="lista">
       <li v-for="s in sugestoes" :key="s.id" class="sugestao" :class="s.estado">
@@ -69,11 +69,11 @@ onMounted(carregar)
           <p class="texto-sugestao">{{ s.texto }}</p>
           <p v-if="s.resposta" class="resposta">{{ s.resposta }}</p>
           <p class="meta">
-            <span class="chip" :class="{ ok: s.estado === 'feita' }">{{ NOMES[s.estado] || s.estado }}</span>
+            <span class="etiqueta" :class="{ verde: s.estado === 'feita', ambar: s.estado === 'nova' }">{{ NOMES[s.estado] || s.estado }}</span>
             {{ data(s.criada_em) }}
           </p>
         </div>
-        <button class="botao icone" aria-label="Apagar sugestão" title="Apagar" @click="apagar(s)">
+        <button class="botao discreto icone" aria-label="Apagar sugestão" title="Apagar" @click="apagar(s)">
           <Icone nome="fechar" />
         </button>
       </li>
@@ -124,7 +124,7 @@ onMounted(carregar)
   padding-left: 10px;
   border-left: 2px solid var(--azul);
   color: var(--texto-suave);
-  font-size: 0.88rem;
+  font-size: 13.5px;
   line-height: 1.45;
 }
 
@@ -134,6 +134,6 @@ onMounted(carregar)
   gap: 8px;
   margin-top: 6px !important;
   color: var(--texto-fraco);
-  font-size: 0.78rem;
+  font-size: 12.5px;
 }
 </style>

@@ -80,19 +80,19 @@ onMounted(carregar)
       falhar, não são tocados. Depois de limpar, o próximo deploy de cada app demora um pouco mais.
     </p>
 
-    <div v-if="erro" class="aviso erro">{{ erro }}</div>
-    <div v-else-if="estado && !estado.docker_ligado" class="aviso erro">O Docker não está ligado ao painel; a limpeza não roda.</div>
+    <div v-if="erro" class="aviso">{{ erro }}</div>
+    <div v-else-if="estado && !estado.docker_ligado" class="aviso">O Docker não está ligado ao painel; a limpeza não roda.</div>
 
     <template v-if="estado">
-      <p class="rotulo">Agora</p>
+      <h2 class="secao">Agora</h2>
       <div class="agora">
         <p v-if="docker">
           Para liberar: <strong>{{ bytes(docker.cache_liberavel) }}</strong> de cache de build e <strong>{{ bytes(docker.imagens_soltas) }}</strong> de imagens soltas.
         </p>
-        <button class="botao principal" :disabled="limpando || !estado.docker_ligado" @click="limparAgora">{{ limpando ? 'Limpando…' : 'Limpar agora' }}</button>
+        <button class="botao primario" :disabled="limpando || !estado.docker_ligado" @click="limparAgora">{{ limpando ? 'Limpando…' : 'Limpar agora' }}</button>
       </div>
 
-      <p class="rotulo">Agenda</p>
+      <h2 class="secao">Agenda</h2>
       <form v-if="agenda" class="agenda" @submit.prevent="salvar">
         <label class="marcar">
           <input v-model="agenda.ativa" type="checkbox" />
@@ -101,13 +101,12 @@ onMounted(carregar)
 
         <fieldset :disabled="!agenda.ativa">
           <legend class="suave pequeno">Com que frequência</legend>
-          <div class="pilulas" role="radiogroup" aria-label="Frequência">
+          <div class="abas" role="radiogroup" aria-label="Frequência">
             <button
               v-for="f in FREQUENCIAS"
               :key="f.dias"
               type="button"
               role="radio"
-              class="pilula"
               :class="{ ativa: agenda.a_cada_dias === f.dias }"
               :aria-checked="agenda.a_cada_dias === f.dias"
               @click="agenda.a_cada_dias = f.dias"
@@ -135,14 +134,14 @@ onMounted(carregar)
         </div>
       </form>
 
-      <p class="rotulo">Histórico</p>
+      <h2 class="secao">Histórico</h2>
       <ul v-if="estado.historico.length" class="lista">
         <li v-for="l in estado.historico" :key="l.id" class="linha">
           <span class="esquerda">
             <span>{{ dataHora(l.iniciada_em) }}</span>
-            <span class="chip">{{ l.origem === 'agenda' ? 'Agenda' : 'Manual' }}</span>
-            <span v-if="l.erro" class="chip erro" :title="l.erro">Erro</span>
-            <span v-else-if="!l.terminada_em" class="chip andando">Limpando</span>
+            <span class="etiqueta">{{ l.origem === 'agenda' ? 'Agenda' : 'Manual' }}</span>
+            <span v-if="l.erro" class="etiqueta vermelho" :title="l.erro">Erro</span>
+            <span v-else-if="!l.terminada_em" class="etiqueta azul">Limpando</span>
           </span>
           <span class="valor">{{ bytes(l.cache_liberado + l.imagens_liberado) }} liberados</span>
           <p v-if="l.erro" class="erro-texto">{{ l.erro }}</p>
@@ -156,12 +155,8 @@ onMounted(carregar)
 <style scoped>
 .explicacao {
   margin: 0 0 14px;
-  font-size: 0.88rem;
+  font-size: 14px;
   line-height: 1.5;
-}
-
-.pequeno {
-  font-size: 0.82rem;
 }
 
 .agora {
@@ -199,12 +194,6 @@ legend {
   padding: 0;
 }
 
-.pilulas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
 .marcar {
   display: flex;
   align-items: center;
@@ -215,7 +204,7 @@ legend {
 .marcar input {
   width: 16px;
   height: 16px;
-  accent-color: var(--marca);
+  accent-color: var(--azul);
 }
 
 .hora {
@@ -252,7 +241,7 @@ legend {
 
 .valor {
   color: var(--texto-suave);
-  font-size: 0.9rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -260,6 +249,6 @@ legend {
   flex-basis: 100%;
   margin: 0;
   color: var(--vermelho);
-  font-size: 0.82rem;
+  font-size: 13px;
 }
 </style>

@@ -37,11 +37,11 @@ const NOMES_DO_ESTADO = { running: 'Ligada', stopped: 'Desligada', paused: 'Paus
 <template>
   <div class="pagina">
     <h1>Servidor</h1>
-    <div v-if="erro" class="aviso erro">{{ erro }}</div>
+    <div v-if="erro" class="aviso">{{ erro }}</div>
     <p v-else-if="!dados" class="suave">Lendo…</p>
 
     <template v-if="dados">
-      <p class="rotulo">Proxmox</p>
+      <h2 class="secao">Proxmox</h2>
       <template v-if="dados.proxmox">
         <p class="suave pequeno">
           Node {{ no.nome }}, {{ no.versao.split('/').slice(0, 2).join(' ') }}, ligado há {{ duracao(no.ligado_ha) }}. {{ no.modelo }}.
@@ -64,13 +64,13 @@ const NOMES_DO_ESTADO = { running: 'Ligada', stopped: 'Desligada', paused: 'Paus
           <Medidor nome="Disco do sistema (raiz)" :usado="no.raiz.usado" :total="no.raiz.total" />
         </div>
 
-        <p class="rotulo">Máquinas no Proxmox</p>
+        <h2 class="secao">Máquinas no Proxmox</h2>
         <ul class="lista">
           <li v-for="m in dados.proxmox.maquinas" :key="m.id" class="linha">
             <span class="esquerda">
               <span class="titulo">{{ m.id }} {{ m.nome }}</span>
-              <span class="chip">{{ NOMES_DO_TIPO[m.tipo] || m.tipo }}</span>
-              <span class="chip" :class="m.estado === 'running' ? 'ok' : ''">{{ NOMES_DO_ESTADO[m.estado] || m.estado }}</span>
+              <span class="etiqueta">{{ NOMES_DO_TIPO[m.tipo] || m.tipo }}</span>
+              <span class="etiqueta" :class="{ azul: m.estado === 'running' }">{{ NOMES_DO_ESTADO[m.estado] || m.estado }}</span>
             </span>
             <span class="valor">
               {{ Math.round(m.cpu * 100) }}% de {{ m.cpus }} CPUs, {{ bytes(m.memoria) }} de {{ bytes(m.memoria_max) }}, disco de {{ bytes(m.disco_max) }}
@@ -78,9 +78,9 @@ const NOMES_DO_ESTADO = { running: 'Ligada', stopped: 'Desligada', paused: 'Paus
           </li>
           <li v-if="!dados.proxmox.maquinas.length" class="suave linha">Nenhuma máquina.</li>
         </ul>
-        <div v-for="a in dados.proxmox.avisos" :key="a" class="aviso">Não veio: {{ a }}</div>
+        <div v-for="a in dados.proxmox.avisos" :key="a" class="aviso neutro">Não veio: {{ a }}</div>
       </template>
-      <div v-else-if="dados.proxmox_erro" class="aviso erro">{{ dados.proxmox_erro }}</div>
+      <div v-else-if="dados.proxmox_erro" class="aviso">{{ dados.proxmox_erro }}</div>
       <div v-else class="instrucoes">
         <p>O Proxmox ainda não está ligado ao painel. Para ligar, crie um usuário só de leitura no shell do Proxmox ({{ dados.proxmox_endereco }}, em pve → Shell):</p>
         <pre><code>pveum user add hub@pve --comment "Painel do Hub, só leitura"
@@ -89,7 +89,7 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
         <p>Depois ponha o token em <code>/opt/apps/hub.env</code> na VM, na linha <code>PROXMOX_TOKEN=hub@pve!painel=&lt;value&gt;</code>, e publique o Hub de novo.</p>
       </div>
 
-      <p class="rotulo">VM apps por dentro</p>
+      <h2 class="secao">VM apps por dentro</h2>
       <div v-if="dados.vm" class="lista">
         <Medidor
           nome="Memória"
@@ -102,9 +102,9 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
           <span class="valor">{{ dados.vm.carga.map((c) => c.toLocaleString('pt-BR', { maximumFractionDigits: 2 })).join('   ') }} em {{ dados.vm.cpus }} CPUs</span>
         </div>
       </div>
-      <div v-else class="aviso erro">{{ dados.vm_erro }}</div>
+      <div v-else class="aviso">{{ dados.vm_erro }}</div>
 
-      <p class="rotulo">Memória por app</p>
+      <h2 class="secao">Memória por app</h2>
       <template v-if="memoria">
         <p v-if="dados.vm" class="suave pequeno">
           Os apps usam {{ bytes(memoria.soma) }} dos {{ bytes(dados.vm.memoria.usado) }} em uso na VM. O processador é a média do último segundo.
@@ -133,31 +133,27 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
           </li>
         </ul>
       </template>
-      <div v-else-if="dados.memoria_erro" class="aviso">{{ dados.memoria_erro }}</div>
-      <div v-else-if="dados.docker_erro" class="aviso erro">{{ dados.docker_erro }}</div>
+      <div v-else-if="dados.memoria_erro" class="aviso neutro">{{ dados.memoria_erro }}</div>
+      <div v-else-if="dados.docker_erro" class="aviso">{{ dados.docker_erro }}</div>
 
-      <p class="rotulo">Contêineres</p>
+      <h2 class="secao">Contêineres</h2>
       <ul v-if="dados.containers.length" class="lista">
         <li v-for="c in dados.containers" :key="c.nome" class="linha">
           <span class="esquerda">
             <span class="titulo">{{ c.nome }}</span>
             <span class="suave pequeno">{{ c.imagem.length > 40 ? c.imagem.slice(0, 40) + '…' : c.imagem }}</span>
           </span>
-          <span class="chip" :class="c.estado === 'running' ? 'ok' : 'erro'">{{ c.status }}</span>
+          <span class="etiqueta" :class="c.estado === 'running' ? 'azul' : 'vermelho'">{{ c.status }}</span>
         </li>
       </ul>
-      <div v-else-if="dados.docker_erro" class="aviso erro">{{ dados.docker_erro }}</div>
+      <div v-else-if="dados.docker_erro" class="aviso">{{ dados.docker_erro }}</div>
     </template>
   </div>
 </template>
 
 <style scoped>
-.rotulo:first-of-type {
-  margin-top: 8px;
-}
-
-.pequeno {
-  font-size: 0.82rem;
+h2.secao:first-of-type {
+  margin-top: var(--e2);
 }
 
 .numeros {
@@ -173,12 +169,12 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
 
 .rotulo-numero {
   color: var(--texto-suave);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 500;
 }
 
 .numero {
-  font-size: 1.75rem;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
@@ -205,7 +201,7 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
 
 .valor {
   color: var(--texto-suave);
-  font-size: 0.88rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
   white-space: pre-wrap;
 }
@@ -255,15 +251,11 @@ pveum user token add hub@pve painel --privsep 0</code></pre>
 
 pre {
   overflow-x: auto;
-  padding: 12px 14px;
+  padding: var(--e3) var(--e4);
+  border: 1px solid var(--borda);
   border-radius: var(--raio);
   background: var(--superficie);
-  font-size: 0.8rem;
+  font-size: 13px;
   line-height: 1.6;
-}
-
-code {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 0.85em;
 }
 </style>

@@ -121,28 +121,28 @@ onMounted(carregar)
 
 <template>
   <div class="pagina">
-    <div class="titulo">
+    <div class="cabecalho">
       <h1>Claude</h1>
-      <button class="botao icone" :disabled="ocupado" aria-label="Medir de novo" title="Medir de novo" @click="carregar"><Icone nome="atualizar" /></button>
+      <button class="botao discreto icone" :disabled="ocupado" aria-label="Medir de novo" title="Medir de novo" @click="carregar"><Icone nome="atualizar" /></button>
     </div>
     <p class="suave explicacao">
       As contas que dão a IA do Acervo, do Flashcards e do Streaming. Os apps usam a conta ativa; a troca vale na próxima tarefa, sem reiniciar nada. O uso
       é da conta inteira: inclui o que você usa no Mac e no app do Claude.
     </p>
 
-    <div v-if="erro" class="aviso erro">{{ erro }}</div>
+    <div v-if="erro" class="aviso">{{ erro }}</div>
     <p v-else-if="!contas" class="suave">Medindo as contas…</p>
 
-    <section v-for="c in contas" :key="c.id" class="cartao conta" :class="{ ativa: c.ativa }">
+    <section v-for="c in contas" :key="c.id" class="cartao cheio conta" :class="{ ativa: c.ativa }">
       <div class="cabeca">
-        <h2>{{ c.nome }} <span v-if="c.ativa" class="chip ok">Ativa</span></h2>
-        <button v-if="c.configurada && !c.ativa" class="botao principal" :disabled="ocupado" @click="usar(c)">Usar esta conta</button>
+        <h2>{{ c.nome }} <span v-if="c.ativa" class="etiqueta verde">Ativa</span></h2>
+        <button v-if="c.configurada && !c.ativa" class="botao primario" :disabled="ocupado" @click="usar(c)">Usar esta conta</button>
       </div>
 
       <template v-if="c.configurada">
-        <div v-if="c.erro" class="aviso erro">{{ c.erro }}</div>
+        <div v-if="c.erro" class="aviso">{{ c.erro }}</div>
         <template v-if="c.uso">
-          <p v-if="c.uso.esgotada" class="aviso erro">Limite esgotado: o Claude recusa as tarefas desta conta até a janela zerar.</p>
+          <p v-if="c.uso.esgotada" class="aviso">Limite esgotado: o Claude recusa as tarefas desta conta até a janela zerar.</p>
           <div
             v-for="j in JANELAS.map((x) => ({ ...x, v: c.uso[x.chave], r: ritmo(x, c.uso[x.chave], c.medido_em) }))"
             :key="j.nome"
@@ -182,21 +182,10 @@ onMounted(carregar)
 </template>
 
 <style scoped>
-.titulo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .explicacao {
   margin: 0 0 14px;
-  font-size: 0.88rem;
+  font-size: 14px;
   line-height: 1.5;
-}
-
-.pequeno {
-  font-size: 0.82rem;
 }
 
 .conta {
@@ -206,7 +195,7 @@ onMounted(carregar)
 }
 
 .conta.ativa {
-  border-color: var(--marca);
+  border-color: var(--azul);
 }
 
 .cabeca {
@@ -222,7 +211,6 @@ onMounted(carregar)
   align-items: center;
   gap: 8px;
   margin: 0;
-  font-size: 1.05rem;
 }
 
 .topo {
@@ -235,7 +223,7 @@ onMounted(carregar)
 
 .valor {
   color: var(--texto-suave);
-  font-size: 0.88rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }

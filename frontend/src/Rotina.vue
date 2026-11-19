@@ -346,7 +346,7 @@ onMounted(carregar)
   <div class="pagina rotina">
     <h1>Rotina</h1>
 
-    <div v-if="erro" class="aviso erro">{{ erro }}</div>
+    <div v-if="erro" class="aviso">{{ erro }}</div>
 
     <template v-if="cfg">
       <FalarRotina v-if="cfg.ia && (aba === 'semana' || aba === 'mes')" @adicionado="aoAdicionar" />
@@ -366,7 +366,7 @@ onMounted(carregar)
         <p v-if="adicionados.observacao" class="suave pequeno observacao">{{ adicionados.observacao }}</p>
       </div>
 
-      <div class="pilulas abas" role="tablist" aria-label="Partes da rotina">
+      <div class="abas" role="tablist" aria-label="Partes da rotina">
         <button
           v-for="[id, nome] in [
             ['semana', 'Semana'],
@@ -376,7 +376,6 @@ onMounted(carregar)
           ]"
           :key="id"
           role="tab"
-          class="pilula"
           :class="{ ativa: aba === id }"
           :aria-selected="aba === id"
           @click="aba = id"
@@ -394,25 +393,25 @@ onMounted(carregar)
           <button class="botao icone" aria-label="Semana anterior" @click="mudarSemana(-1)"><Icone nome="voltar" /></button>
           <div class="qual">
             <strong>{{ rotuloSemana(inicio) }}</strong>
-            <span v-if="relacao" class="chip">{{ relacao }}</span>
-            <button v-else class="botao pequeno-botao" @click="abrirSemana(cfg.semana_atual, cfg.dia_de_hoje)">Ir para hoje</button>
+            <span v-if="relacao" class="etiqueta">{{ relacao }}</span>
+            <button v-else class="botao discreto" @click="abrirSemana(cfg.semana_atual, cfg.dia_de_hoje)">Ir para hoje</button>
           </div>
           <button class="botao icone" aria-label="Próxima semana" @click="mudarSemana(1)"><Icone nome="avancar" /></button>
         </div>
-        <p v-else class="descricao-da-pagina modelo-texto">
+        <p v-else class="suave modelo-texto">
           A semana padrão. Cada semana nova nasce como cópia dele; mudar o modelo não mexe nas semanas já planejadas.
         </p>
 
-        <div v-if="aba === 'semana' && semana && !semana.planejada" class="vazio cartao">
+        <div v-if="aba === 'semana' && semana && !semana.planejada" class="vazio cartao cheio">
           <p>Esta semana ainda não foi planejada.</p>
-          <p class="suave pequeno">Ela começa como o modelo; depois é só ajustar o que for diferente (feriado, evento, uma noite livre).</p>
-          <button class="botao principal" :disabled="ocupado" @click="planejar()">Planejar a partir do modelo</button>
+          <p class="pequeno">Ela começa como o modelo; depois é só ajustar o que for diferente (feriado, evento, uma noite livre).</p>
+          <button class="botao primario" :disabled="ocupado" @click="planejar()">Planejar a partir do modelo</button>
         </div>
 
         <template v-else-if="emModelo || semana">
-          <div class="pilulas" role="radiogroup" aria-label="Visão">
-            <button class="pilula" role="radio" :class="{ ativa: visao === 'dia' }" :aria-checked="visao === 'dia'" @click="visao = 'dia'">Dia</button>
-            <button class="pilula" role="radio" :class="{ ativa: visao === 'semana' }" :aria-checked="visao === 'semana'" @click="visao = 'semana'">Semana inteira</button>
+          <div class="abas" role="radiogroup" aria-label="Visão">
+            <button role="radio" :class="{ ativa: visao === 'dia' }" :aria-checked="visao === 'dia'" @click="visao = 'dia'">Dia</button>
+            <button role="radio" :class="{ ativa: visao === 'semana' }" :aria-checked="visao === 'semana'" @click="visao = 'semana'">Semana inteira</button>
           </div>
 
           <!-- Dias: S T Q Q S S D -->
@@ -438,7 +437,7 @@ onMounted(carregar)
           <section v-if="visao === 'dia'" class="um-dia">
             <div class="cabeca-dia">
               <h2>{{ DIAS[dia] }}<span v-if="numeros">, {{ numeros[dia] }}</span></h2>
-              <span v-if="diaDeHoje === dia" class="chip ok">Hoje</span>
+              <span v-if="diaDeHoje === dia" class="etiqueta azul">Hoje</span>
             </div>
             <input
               v-if="!emModelo"
@@ -449,7 +448,7 @@ onMounted(carregar)
               maxlength="120"
               @change="salvarNota"
             />
-            <p v-if="diasEmChoque.has(dia)" class="aviso erro choque-dia">
+            <p v-if="diasEmChoque.has(dia)" class="aviso choque-dia">
               <Icone nome="alerta" /> Tem coisas no mesmo horário (em vermelho). Mova, encurte ou apague uma delas.
             </p>
 
@@ -480,7 +479,7 @@ onMounted(carregar)
 
             <div class="linha-acoes acoes-dia">
               <button class="botao" @click="abrirNovo">+ Bloco</button>
-              <select v-model="copiarDe" class="campo seletor" aria-label="Usar o modelo de um dia">
+              <select v-model="copiarDe" class="campo compacto" aria-label="Usar o modelo de um dia">
                 <option value="" disabled>{{ emModelo ? 'Copiar outro dia…' : 'Usar o modelo de…' }}</option>
                 <option v-for="(nome, d) in DIAS" :key="d" :value="String(d)">{{ !emModelo && d === dia ? `${nome} (voltar ao modelo)` : nome }}</option>
               </select>
@@ -501,8 +500,8 @@ onMounted(carregar)
           />
 
           <!-- ===== Metas ===== -->
-          <h2 class="rotulo">Metas {{ emModelo ? 'do modelo' : 'da semana' }}</h2>
-          <p v-if="faltando.length" class="aviso erro">
+          <h2 class="secao">Metas {{ emModelo ? 'do modelo' : 'da semana' }}</h2>
+          <p v-if="faltando.length" class="aviso">
             Faltam na {{ emModelo ? 'semana padrão' : 'semana' }}: {{ faltando.map((m) => `${m.atividade.nome} (${m.falta})`).join(', ') }}.
           </p>
           <ul class="lista metas">
@@ -510,9 +509,9 @@ onMounted(carregar)
               <span class="ponto-cor" aria-hidden="true" />
               <span class="nome">{{ m.atividade.nome }}</span>
               <span class="suave pequeno">{{ duracao(m.tempo || 0) }}</span>
-              <span class="chips">
-                <span class="chip" :class="{ erro: m.estado === 'falta', ok: m.estado === 'ok' }">{{ m.planejados }} de {{ meta(m.atividade) }}{{ m.estado === 'fixa' ? ' · fixa' : '' }}</span>
-                <span v-if="!emModelo && m.feitos" class="chip ok">{{ m.feitos }} {{ m.feitos === 1 ? 'feita' : 'feitas' }}</span>
+              <span class="etiquetas">
+                <span class="etiqueta" :class="{ vermelho: m.estado === 'falta', verde: m.estado === 'ok' }">{{ m.planejados }} de {{ meta(m.atividade) }}{{ m.estado === 'fixa' ? ' · fixa' : '' }}</span>
+                <span v-if="!emModelo && m.feitos" class="etiqueta verde">{{ m.feitos }} {{ m.feitos === 1 ? 'feita' : 'feitas' }}</span>
               </span>
             </li>
           </ul>
@@ -525,7 +524,7 @@ onMounted(carregar)
 
       <!-- ===== Atividades ===== -->
       <template v-else>
-        <p class="descricao-da-pagina modelo-texto">
+        <p class="suave modelo-texto">
           A meta é quantas vezes por semana. A prioridade diz o que fica quando a semana aperta: alta primeiro. Fixa é o que não dá para remarcar (o futebol de
           terça): se não acontecer, não aparece como falta.
         </p>
@@ -573,7 +572,7 @@ onMounted(carregar)
         </ul>
         <div class="linha-acoes rodape-semana">
           <button class="botao" @click="novaAtividade">+ Atividade</button>
-          <button class="botao principal" :disabled="!atividadesMudaram || ocupado" @click="salvarAtividades">Salvar</button>
+          <button class="botao primario" :disabled="!atividadesMudaram || ocupado" @click="salvarAtividades">Salvar</button>
         </div>
 
         <SugestaoSemana :atividades="atividadesNormais" :ligada="cfg.ia" @usar="usarSugestao" />
@@ -584,13 +583,13 @@ onMounted(carregar)
     <Transition name="folha">
       <div v-if="editando" class="veu" @click.self="editando = null">
         <form
-          class="folha vidro"
+          class="folha"
           :aria-label="editando.modo === 'evento' ? 'Novo evento' : editando.novo ? 'Novo bloco' : 'Editar bloco'"
           @submit.prevent="salvarEdicao"
         >
           <h2>{{ editando.modo === 'evento' ? 'Novo evento' : editando.novo ? 'Novo bloco' : 'Editar bloco' }}</h2>
           <label>
-            <span class="rotulo-campo">O quê</span>
+            <span class="rotulo">O quê</span>
             <select v-model="editando.b.atividade" class="campo" aria-label="Atividade">
               <option v-if="!emModelo" value="">Outro: um evento com nome</option>
               <option v-for="a in cfg.atividades" :key="a.id" :value="a.id">{{ a.nome }}</option>
@@ -598,15 +597,15 @@ onMounted(carregar)
             </select>
           </label>
           <label v-if="!editando.b.atividade">
-            <span class="rotulo-campo">Nome</span>
+            <span class="rotulo">Nome</span>
             <input v-model="editando.b.titulo" class="campo" maxlength="80" placeholder="Encontro com amigos" aria-label="Nome do evento" />
           </label>
           <label v-if="editando.modo === 'evento'">
-            <span class="rotulo-campo">Data</span>
+            <span class="rotulo">Data</span>
             <input v-model="editando.data" type="date" class="campo" aria-label="Data" required />
           </label>
           <label v-else>
-            <span class="rotulo-campo">Dia</span>
+            <span class="rotulo">Dia</span>
             <select v-model.number="editando.b.dia" class="campo" aria-label="Dia">
               <option v-for="(nome, d) in DIAS" :key="d" :value="d">{{ nome }}<template v-if="numeros">, {{ numeros[d] }}</template></option>
             </select>
@@ -616,21 +615,21 @@ onMounted(carregar)
           </label>
           <div v-if="!editando.semHorario" class="horas">
             <label>
-              <span class="rotulo-campo">Começa</span>
+              <span class="rotulo">Começa</span>
               <input v-model="editando.b.inicio" type="time" step="300" class="campo" aria-label="Começa" />
             </label>
             <label>
-              <span class="rotulo-campo">Termina</span>
+              <span class="rotulo">Termina</span>
               <input v-model="editando.b.fim" type="time" step="300" class="campo" aria-label="Termina" />
             </label>
           </div>
           <label>
-            <span class="rotulo-campo">Nota</span>
+            <span class="rotulo">Nota</span>
             <input v-model="editando.b.nota" class="campo" maxlength="300" placeholder="Opcional" aria-label="Nota" />
           </label>
           <p v-if="erroDaEdicao" class="erro-texto">{{ erroDaEdicao }}</p>
           <div class="linha-acoes">
-            <button class="botao principal" :disabled="!!erroDaEdicao || ocupado">{{ editando.modo === 'evento' ? 'Adicionar' : 'Salvar' }}</button>
+            <button class="botao primario" :disabled="!!erroDaEdicao || ocupado">{{ editando.modo === 'evento' ? 'Adicionar' : 'Salvar' }}</button>
             <button type="button" class="botao" @click="editando = null">Cancelar</button>
             <button v-if="!editando.novo" type="button" class="botao perigo apagar" :disabled="ocupado" @click="apagarDaFolha">Apagar</button>
           </div>
@@ -641,18 +640,8 @@ onMounted(carregar)
 </template>
 
 <style scoped>
-.pequeno {
-  font-size: 0.82rem;
-}
-
 .abas {
   margin-bottom: 18px;
-}
-
-.pilulas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
 }
 
 .modelo-texto {
@@ -695,7 +684,7 @@ onMounted(carregar)
 }
 
 .link:hover strong {
-  color: var(--marca);
+  color: var(--link);
 }
 
 .choque {
@@ -704,7 +693,7 @@ onMounted(carregar)
   gap: 4px;
   margin-top: 2px;
   color: var(--vermelho);
-  font-size: 0.85rem;
+  font-size: 13.5px;
 }
 
 .choque svg,
@@ -733,13 +722,7 @@ onMounted(carregar)
   align-items: center;
   justify-content: center;
   gap: 4px 10px;
-  font-size: 1.0625rem;
-}
-
-.pequeno-botao {
-  min-height: 26px;
-  padding: 0 8px;
-  font-size: 0.78rem;
+  font-size: 16px;
 }
 
 .vazio p {
@@ -784,27 +767,27 @@ onMounted(carregar)
 }
 
 .dia .letra {
-  font-size: 0.8rem;
+  font-size: 12.5px;
   font-weight: 600;
 }
 
 .dia .numero {
-  font-size: 1.05rem;
+  font-size: 16px;
   font-variant-numeric: tabular-nums;
   color: var(--texto);
 }
 
 .dia.hoje {
-  border-color: var(--marca);
+  border-color: var(--azul);
 }
 
 .dia.ativo {
-  background: var(--marca);
-  color: var(--marca-texto);
+  background: var(--azul);
+  color: var(--fundo);
 }
 
 .dia.ativo .numero {
-  color: var(--marca-texto);
+  color: var(--fundo);
 }
 
 .dia .ponto {
@@ -818,7 +801,7 @@ onMounted(carregar)
 }
 
 .dia.ativo .ponto {
-  background: var(--marca-texto);
+  background: var(--fundo);
 }
 
 .dia .alerta {
@@ -833,7 +816,7 @@ onMounted(carregar)
   border-radius: 999px;
   background: var(--vermelho);
   color: var(--fundo);
-  font-size: 0.68rem;
+  font-size: 11px;
   font-weight: 800;
   box-sizing: content-box;
 }
@@ -848,9 +831,6 @@ onMounted(carregar)
 
 .cabeca-dia h2 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 650;
-  letter-spacing: -0.012em;
 }
 
 .nota-dia {
@@ -881,7 +861,7 @@ onMounted(carregar)
 .bloco .marcar input {
   width: 18px;
   height: 18px;
-  accent-color: var(--marca);
+  accent-color: var(--azul);
 }
 
 .corpo {
@@ -898,20 +878,20 @@ onMounted(carregar)
 }
 
 .corpo:hover .nome {
-  color: var(--marca);
+  color: var(--link);
 }
 
 .horario {
   flex-shrink: 0;
   width: 92px;
   color: var(--texto-suave);
-  font-size: 0.88rem;
+  font-size: 13.5px;
   font-variant-numeric: tabular-nums;
 }
 
 .horario.tarefa {
-  color: var(--marca);
-  font-size: 0.78rem;
+  color: var(--azul);
+  font-size: 12.5px;
   font-weight: 600;
 }
 
@@ -922,15 +902,15 @@ onMounted(carregar)
 }
 
 .texto .nome {
-  font-size: 1.0625rem;
-  font-weight: 650;
-  transition: color 0.15s ease;
+  font-size: 16px;
+  font-weight: 600;
+  transition: color var(--transicao);
 }
 
 .texto .nota {
   overflow: hidden;
   color: var(--texto-suave);
-  font-size: 0.85rem;
+  font-size: 13px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -938,7 +918,7 @@ onMounted(carregar)
 .duracao {
   flex-shrink: 0;
   color: var(--texto-fraco);
-  font-size: 0.78rem;
+  font-size: 12.5px;
 }
 
 .lixeira {
@@ -967,14 +947,14 @@ onMounted(carregar)
 
 .livre {
   padding: 18px 0;
-  border-top: 1px solid var(--linha);
-  border-bottom: 1px solid var(--linha);
+  border-top: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
 }
 
 .sono {
   margin: 10px 0 0;
   color: var(--texto-fraco);
-  font-size: 0.82rem;
+  font-size: 12.5px;
 }
 
 .sono.pouco {
@@ -983,13 +963,6 @@ onMounted(carregar)
 
 .acoes-dia {
   margin-top: 14px;
-}
-
-.seletor {
-  width: auto;
-  min-height: 32px;
-  padding: 4px 10px;
-  font-size: 0.87rem;
 }
 
 /* Metas */
@@ -1005,7 +978,7 @@ onMounted(carregar)
   font-weight: 600;
 }
 
-.chips {
+.etiquetas {
   display: flex;
   gap: 4px;
   margin-left: auto;
@@ -1063,28 +1036,25 @@ onMounted(carregar)
 
 .numero-meta .campo {
   width: 58px;
-  min-height: 32px;
-  padding: 4px 8px;
+  padding: 0 8px;
 }
 
 .prioridade {
   width: auto;
-  min-height: 32px;
-  padding: 4px 10px;
 }
 
 .marcar-fixa {
   display: flex !important;
   align-items: center;
   gap: 6px;
-  font-size: 0.9rem;
+  font-size: 13.5px;
   cursor: pointer;
 }
 
 .marcar-fixa input {
   width: 16px;
   height: 16px;
-  accent-color: var(--marca);
+  accent-color: var(--azul);
 }
 
 /* Folha */
@@ -1095,9 +1065,7 @@ onMounted(carregar)
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgb(0 0 0 / 28%);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
+  background: rgb(0 0 0 / 55%);
 }
 
 .folha {
@@ -1107,26 +1075,17 @@ onMounted(carregar)
   max-height: 90vh;
   overflow-y: auto;
   padding: 20px 20px max(20px, env(safe-area-inset-bottom));
-  border: 1px solid var(--vidro-borda);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
   border-radius: var(--raio-g) var(--raio-g) 0 0;
-  box-shadow: var(--sombra);
 }
 
 .folha h2 {
   margin: 0 0 4px;
-  font-size: 1.25rem;
-  font-weight: 650;
 }
 
 .folha label {
   display: grid;
-  gap: 5px;
-}
-
-.rotulo-campo {
-  color: var(--texto-suave);
-  font-size: 0.81rem;
-  font-weight: 600;
 }
 
 .horas {
@@ -1142,7 +1101,7 @@ onMounted(carregar)
 .erro-texto {
   margin: 0;
   color: var(--vermelho);
-  font-size: 0.85rem;
+  font-size: 13.5px;
 }
 
 .folha-enter-active,
@@ -1181,13 +1140,13 @@ onMounted(carregar)
     display: grid;
     width: 50px;
     color: var(--texto);
-    font-size: 0.9rem;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .horario .ate {
     color: var(--texto-fraco);
-    font-size: 0.78rem;
+    font-size: 12.5px;
     font-weight: 400;
   }
 

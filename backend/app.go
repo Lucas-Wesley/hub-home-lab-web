@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -25,6 +26,8 @@ type config struct {
 	claudeContas   string
 	claudePrograma string
 	claudeCasa     string
+	// Internet (H15): o sensor do servidor, o roteador (rpcd, só leitura) e os registros dele.
+	internet configInternet
 }
 
 type configProxmox struct {
@@ -58,23 +61,33 @@ func configDoAmbiente() config {
 		claudeContas:   os.Getenv("CLAUDE_CONTAS"),
 		claudePrograma: env("CLAUDE_BIN", "claude"),
 		claudeCasa:     env("CLAUDE_CASA", os.TempDir()),
+		internet: configInternet{
+			ligada:   os.Getenv("INTERNET_VIGIA") == "1",
+			roteador: env("ROTEADOR_URL", "http://192.168.1.1"),
+			usuario:  env("ROTEADOR_USUARIO", "hub"),
+			senha:    os.Getenv("ROTEADOR_SENHA"),
+			alvos:    strings.Fields(env("INTERNET_ALVOS", "1.1.1.1 8.8.8.8")),
+			dns:      env("DNS_CASA", "192.168.1.20:53"),
+			registro: os.Getenv("ROTEADOR_REGISTRO"),
+		},
 	}
 }
 
 // app junta o que os handlers e a agenda de limpeza usam.
 type app struct {
-	db      *sql.DB
-	fuso    *time.Location
-	relogio func() time.Time
-	cfg     config
-	docker  *clienteDocker  // nil sem DOCKER_URL
-	proxmox *clienteProxmox // nil sem PROXMOX_TOKEN
-	avisos  *avisador       // nil sem NTFY_URL
-	adguard *clienteAdGuard // nil sem ADGUARD_SENHA
-	claude  *contasDoClaude // nil sem CLAUDE_CONTAS
-	ia      perguntador     // a IA da Rotina, com a conta ativa; nil sem CLAUDE_CONTAS
-	medidas *cacheDeMedidas
-	amostra time.Duration // intervalo mínimo entre as duas leituras do processador
+	db       *sql.DB
+	fuso     *time.Location
+	relogio  func() time.Time
+	cfg      config
+	docker   *clienteDocker  // nil sem DOCKER_URL
+	proxmox  *clienteProxmox // nil sem PROXMOX_TOKEN
+	avisos   *avisador       // nil sem NTFY_URL
+	adguard  *clienteAdGuard // nil sem ADGUARD_SENHA
+	claude   *contasDoClaude // nil sem CLAUDE_CONTAS
+	internet *sensorDaInternet
+	ia       perguntador // a IA da Rotina, com a conta ativa; nil sem CLAUDE_CONTAS
+	medidas  *cacheDeMedidas
+	amostra  time.Duration // intervalo mínimo entre as duas leituras do processador
 
 	limpando sync.Mutex // uma limpeza por vez, da agenda ou do botão
 }
@@ -91,6 +104,7 @@ func novoApp(db *sql.DB, fuso *time.Location, relogio func() time.Time, cfg conf
 		}
 		a.proxmox = p
 	}
+	a.internet = novoSensor(cfg.internet)
 	if cfg.adguard.senha != "" {
 		a.adguard = novoAdGuard(cfg.adguard)
 	}

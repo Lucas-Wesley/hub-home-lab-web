@@ -25,6 +25,11 @@ services:
       BACKUP_STATUS: /host/backup/ultimo
       CLAUDE_CONTAS: /claude
       CLAUDE_CASA: /data/claude
+      # Internet (H15): mede a cada 10 s roteador → Claro → internet → DNS e lê a wan no roteador com
+      # o usuário hub do rpcd (só leitura; ROTEADOR_SENHA no hub.env). Os registros do roteador chegam
+      # pela pasta dos apps (homelab/roteador).
+      INTERNET_VIGIA: "1"
+      ROTEADOR_REGISTRO: /apps/roteador/roteador.log
     # Rede (H10): a API do AdGuard escuta só na ponte do Docker (172.17.0.1:3001). O usuário e a senha
     # do Hub no AdGuard (ADGUARD_USUARIO, ADGUARD_SENHA) ficam no /opt/apps/hub.env, fora do Git.
     extra_hosts:

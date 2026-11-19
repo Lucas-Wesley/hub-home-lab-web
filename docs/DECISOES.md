@@ -29,7 +29,8 @@ versão ele só lê, com uma exceção: a limpeza do Docker.
 - **Aplicações:** o link de cada app pelo nome `.internal` e como instalá-lo no celular (H12).
 - **Ajustes:** Sugestões de melhoria, com a API comum (`/api/sugestoes`).
 - **Vigia:** avisa no celular, pelo ntfy, disco cheio, contêiner parado e backup atrasado (H9).
-- **Rede:** o AdGuard Home (DNS da casa): pausar e religar o bloqueio, liberar domínios (H10).
+- **Rede:** a vigia da internet, que diz se a queda é da Claro, do roteador, do DNS ou do Wi-Fi (H15), e o AdGuard
+  Home (DNS da casa): pausar e religar o bloqueio, liberar domínios (H10).
 
 ## A infraestrutura que o painel mostra
 
@@ -291,6 +292,33 @@ rotina sugerida e as próximas fases (lembretes, treino, alimentação) estão e
   `extra` (não veio do modelo; sobrevive ao "refazer"). Atividade `fixa` não gera aviso de falta.
   `GET /api/rotina/semanas?de=&ate=` traz as semanas planejadas do mês. Nos testes de ponta a ponta, um
   Claude falso (`backend/testdata/claude-falso.py`).
+
+### H15. Internet: de quem é a queda (18/11/2026)
+
+A internet caía várias vezes por semana e o Lucas tirava o modem e o roteador da tomada (num T junto com o servidor)
+sem saber de quem era a culpa. Agora a tela **Rede** começa pela internet:
+
+- **Dois sensores a cada 10 s.** O **servidor** (o próprio Hub, no cabo) pinga o roteador, o gateway da Claro (lido
+  do roteador), 1.1.1.1 e 8.8.8.8, e pergunta um nome ao AdGuard (um nome aleatório por minuto, para obrigá-lo a ir lá
+  fora). Lê também a porta wan no roteador: com sinal, com IP da Claro, há quanto tempo e o prefixo IPv6. O **Mac
+  mini** (no Wi-Fi, `homelab/internet-mac`) mede o roteador, a internet por IPv4 e IPv6 e o DNS, e manda em lote
+  (`POST /api/internet/medidas`); sem rede, guarda e manda quando volta. ~500 bytes por rodada: uns 130 MB por mês.
+- **A causa:** roteador sem resposta → *roteador*; wan sem IP ou internet sem resposta → *Claro ou modem*; internet
+  ok e DNS não → *DNS*. No Mac: roteador sem resposta → *Wi-Fi*; sem internet enquanto o servidor tinha →
+  *só no Wi-Fi* (o defeito é no Wi-Fi do roteador); só o IPv6 → *IPv6 da Claro*.
+- **Queda:** 3 medidas seguidas com falha (30 s) abrem; 2 boas fecham. A causa é a mais vista. Medidas por 3 dias,
+  quedas por 30 dias; cada queda mostra o que o roteador anotou no período.
+- **Aviso no ntfy** (tópico `servidor`) para quedas de 1 min ou mais: "caiu" com o que fazer (só o servidor sabe na
+  hora) e "voltou" com a duração e a causa. O ntfy é da rede de casa: chega pelo Wi-Fi mesmo sem internet.
+- **O roteador** (OpenWrt 25.12, `192.168.1.1`) tem um usuário `hub` no rpcd que só pode ler o status da wan e da
+  wan6 (`/usr/share/rpcd/acl.d/hub-leitura.json`); a senha fica no `hub.env` (`ROTEADOR_SENHA`). Os registros dele
+  vão para a VM por syslog e ficam em `/srv/data/roteador/roteador.log` (`homelab/roteador/README.md`), porque os
+  do próprio roteador somem quando ele desliga.
+- **Ping sem privilégio:** socket ICMP `SOCK_DGRAM`, que o Docker libera nos contêineres; o Hub não ganha `NET_RAW`.
+
+O que se viu antes da vigia (registros do Tailscale na VM): quedas em 13/11 (03:02–08:03), 15–16/11 (23:44–07:32),
+16/11 (12:55, 17:47) e 18/11 (16:27). Na queda das ~21h de 18/11 a wan e a VM estavam com internet e o DNS respondia
+ao Mac sem falhas: o defeito não foi da Claro.
 
 ## Próximos passos
 

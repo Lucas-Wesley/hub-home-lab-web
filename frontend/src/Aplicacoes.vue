@@ -24,7 +24,7 @@ const curto = (endereco) => endereco.replace('https://', '')
     <h1>Aplicações</h1>
     <p class="suave explicacao">Toque para abrir. Os endereços antigos, com o IP e a porta, continuam valendo.</p>
 
-    <section class="lista">
+    <section class="grade">
       <a v-for="app in APPS" :key="app.nome" class="cartao app" :href="app.endereco" target="_blank" rel="noopener">
         <img class="icone-app" :src="`${app.endereco}/icon-192.png`" alt="" width="44" height="44" />
         <span class="texto">
@@ -35,7 +35,7 @@ const curto = (endereco) => endereco.replace('https://', '')
       </a>
     </section>
 
-    <h2>Servidor</h2>
+    <h2 class="secao">Servidor</h2>
     <section class="cartao servidor">
       <a v-for="s in SERVIDOR" :key="s.nome" class="linha" :href="s.endereco" target="_blank" rel="noopener">
         <strong>{{ s.nome }}</strong>
@@ -43,7 +43,7 @@ const curto = (endereco) => endereco.replace('https://', '')
       </a>
     </section>
 
-    <h2>Instalar no celular</h2>
+    <h2 class="secao">Instalar no celular</h2>
     <section class="cartao instalar">
       <ol>
         <li>Abra o app pelo Chrome, tocando nele aqui.</li>
@@ -65,31 +65,17 @@ const curto = (endereco) => endereco.replace('https://', '')
 <style scoped>
 .explicacao {
   margin: 0 0 14px;
-  font-size: 0.88rem;
+  font-size: 14px;
 }
 
-h2 {
-  margin: 26px 0 10px;
-  font-size: 1.05rem;
-}
-
-.lista {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
+h2.secao {
+  margin: var(--e6) 0 var(--e3);
 }
 
 .app {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  color: inherit;
-  text-decoration: none;
-  transition: border-color 0.15s ease;
-}
-
-.app:hover {
-  border-color: var(--marca);
 }
 
 .icone-app {
@@ -101,17 +87,17 @@ h2 {
   display: grid;
   gap: 3px;
   min-width: 0;
-  font-size: 0.88rem;
+  font-size: 14px;
   line-height: 1.4;
 }
 
 .texto strong {
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .endereco {
   color: var(--link);
-  font-size: 0.8rem;
+  font-size: 12.5px;
 }
 
 .servidor {
@@ -123,9 +109,9 @@ h2 {
   display: grid;
   gap: 2px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--linha);
+  border-bottom: 1px solid var(--borda);
   color: inherit;
-  font-size: 0.88rem;
+  font-size: 14px;
   text-decoration: none;
 }
 
@@ -140,13 +126,12 @@ h2 {
 .instalar ol {
   margin: 0 0 10px;
   padding-left: 20px;
-  font-size: 0.9rem;
+  font-size: 14px;
   line-height: 1.6;
 }
 
 .pequeno {
   margin: 6px 0 0;
-  font-size: 0.82rem;
   line-height: 1.5;
 }
 </style>

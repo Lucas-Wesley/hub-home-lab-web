@@ -36,11 +36,11 @@ const atual = computed(() => SECOES.find((s) => s.id === props.secao))
       <h1>{{ atual.nome }}</h1>
 
       <template v-if="atual.id === 'sugestoes'">
-        <p class="descricao-da-pagina">Anote o que pode melhorar no Hub. Depois é só pedir ao Claude para ver as sugestões: ele faz as mudanças e responde aqui.</p>
+        <p class="lead">Anote o que pode melhorar no Hub. Depois é só pedir ao Claude para ver as sugestões: ele faz as mudanças e responde aqui.</p>
         <Sugestoes :tela="tela" />
       </template>
 
-      <p v-else-if="atual.id === 'numeros'" class="texto-corrido">
+      <p v-else-if="atual.id === 'numeros'" class="leitura">
         O disco físico, os armazenamentos e as VMs vêm da API do Proxmox, com um token só de leitura. O disco, a memória e as pastas de cada app são
         medidos dentro da VM apps, onde o Hub roda. O uso do Docker vem de um proxy que só deixa o painel ler o disco e limpar o cache: ele não cria
         nem entra em contêineres.
@@ -48,10 +48,3 @@ const atual = computed(() => SECOES.find((s) => s.id === props.secao))
     </template>
   </div>
 </template>
-
-<style scoped>
-.texto-corrido {
-  margin: 0;
-  line-height: 1.6;
-}
-</style>

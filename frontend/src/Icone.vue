@@ -1,75 +1,58 @@
 <script setup>
-defineProps({ nome: { type: String, required: true } })
+// Ícones de traço (16 px, traço 1,5), desenhados à mão no estilo do design system.
+defineProps({
+  nome: { type: String, required: true },
+  tamanho: { type: Number, default: 16 },
+})
+
+const CAMINHOS = {
+  hub: ['M5 10h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1Z', 'M5 20h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1Z', 'M7.5 7h.01', 'M7.5 17h.01'],
+  inicio: ['M4.5 10.5 12 4.5l7.5 6V19a1 1 0 0 1-1 1h-4v-5.5h-5V20h-4a1 1 0 0 1-1-1z'],
+  rotina: ['M4 7.5A2 2 0 0 1 6 5.5h12a2 2 0 0 1 2 2V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z', 'M8 3.5v4', 'M16 3.5v4', 'M4 10h16', 'M8 14h3', 'M8 17h6'],
+  apps: ['M4 8a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 9 8v2a1.5 1.5 0 0 1-1.5 1.5h-2A1.5 1.5 0 0 1 4 10Z', 'M4 17.5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 9 17.5v2A1.5 1.5 0 0 1 7.5 21h-2A1.5 1.5 0 0 1 4 19.5Z', 'M15 8a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 20 8v2a1.5 1.5 0 0 1-1.5 1.5h-2A1.5 1.5 0 0 1 15 10Z', 'M15 17.5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 20 17.5v2a1.5 1.5 0 0 1-1.5 1.5h-2a1.5 1.5 0 0 1-1.5-1.5Z'],
+  disco: ['M12 9c4.1 0 7.5-1.1 7.5-2.5S16.1 4 12 4 4.5 5.1 4.5 6.5 7.9 9 12 9Z', 'M4.5 6.5v11c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-11', 'M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5'],
+  servidor: ['M4 18.5V7a1.5 1.5 0 0 1 1.5-1.5h13A1.5 1.5 0 0 1 20 7v9.5', 'M2 18.5h20', 'M9 21.5h6'],
+  limpeza: ['M14.5 4.5l-5 9', 'M7 13.5h7.5l1.5 6.5H5.5z', 'M9.5 20l.5-3', 'M12.5 20l-.2-3'],
+  rede: ['M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z', 'M4 12h16', 'M12 4c2.2 2.2 3.3 4.9 3.3 8s-1.1 5.8-3.3 8', 'M12 4c-2.2 2.2-3.3 4.9-3.3 8s1.1 5.8 3.3 8'],
+  claude: ['M12 3.5v4', 'M12 16.5v4', 'M3.5 12h4', 'M16.5 12h4', 'M6 6l2.8 2.8', 'M15.2 15.2 18 18', 'M6 18l2.8-2.8', 'M15.2 8.8 18 6'],
+  ajustes: ['M4 6h9', 'M17 6h3', 'M15 4v4', 'M4 12h3', 'M11 12h9', 'M9 10v4', 'M4 18h11', 'M19 18h1', 'M17 16v4'],
+  sol: ['M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z', 'M12 2v2', 'M12 20v2', 'm4.9 4.9 1.4 1.4', 'm17.7 17.7 1.4 1.4', 'M2 12h2', 'M20 12h2', 'm4.9 19.1 1.4-1.4', 'm17.7 6.3 1.4-1.4'],
+  lua: ['M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z'],
+  auto: ['M3 5h18v12H3z', 'M8 21h8', 'M12 17v4'],
+  menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
+  fechar: ['M6 6l12 12', 'M18 6 6 18'],
+  voltar: ['M15 5l-7 7 7 7'],
+  avancar: ['M9 5l7 7-7 7'],
+  'seta-direita': ['m10 7 5 5-5 5'],
+  'seta-baixo': ['m7 10 5 5 5-5'],
+  check: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z', 'm8.5 12 2.5 2.5 4.5-5'],
+  copiar: ['M9 9h10v10H9z', 'M5 15V5h10'],
+  mais: ['M12 5v14', 'M5 12h14'],
+  lupa: ['M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z', 'm20 20-4-4'],
+  link: ['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1'],
+  comentario: ['M4 5h16v11H9l-5 4V5Z'],
+  microfone: ['M9 6.5a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0Z', 'M5.5 11.5a6.5 6.5 0 0 0 13 0', 'M12 18v2.5'],
+  parar: ['M7 9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2Z'],
+  lixeira: ['M5 7h14', 'M10 7V5h4v2', 'M7 7l.8 12a1 1 0 0 0 1 1h6.4a1 1 0 0 0 1-1L17 7', 'M10.5 11v5', 'M13.5 11v5'],
+  alerta: ['M12 4.5 20.5 19h-17z', 'M12 10v4', 'M12 16.5h.01'],
+  faisca: ['M12 4l1.8 4.7 4.7 1.8-4.7 1.8L12 17l-1.8-4.7L5.3 10.5 10 8.7Z', 'M18 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z'],
+  enviar: ['M5 12h13', 'M13 6l6 6-6 6'],
+  atualizar: ['M19.5 12a7.5 7.5 0 1 1-2.2-5.3', 'M19.5 4.5v4h-4'],
+}
 </script>
 
 <template>
-  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path v-if="nome === 'fechar'" d="M6 6l12 12M18 6L6 18" />
-    <path v-else-if="nome === 'voltar'" d="M15 5l-7 7 7 7" />
-    <path v-else-if="nome === 'avancar'" d="M9 5l7 7-7 7" />
-    <template v-else-if="nome === 'hub'">
-      <rect x="4" y="4" width="16" height="6" rx="1.5" />
-      <rect x="4" y="14" width="16" height="6" rx="1.5" />
-      <path d="M7.5 7h.01M7.5 17h.01" />
-    </template>
-    <template v-else-if="nome === 'inicio'">
-      <path d="M4.5 10.5 12 4.5l7.5 6V19a1 1 0 01-1 1h-4v-5.5h-5V20h-4a1 1 0 01-1-1z" />
-    </template>
-    <template v-else-if="nome === 'microfone'">
-      <rect x="9" y="3.5" width="6" height="11" rx="3" />
-      <path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v2.5" />
-    </template>
-    <rect v-else-if="nome === 'parar'" x="7" y="7" width="10" height="10" rx="2" />
-    <template v-else-if="nome === 'lixeira'">
-      <path d="M5 7h14M10 7V5h4v2M7 7l.8 12a1 1 0 001 1h6.4a1 1 0 001-1L17 7M10.5 11v5M13.5 11v5" />
-    </template>
-    <template v-else-if="nome === 'alerta'">
-      <path d="M12 4.5 20.5 19h-17z" />
-      <path d="M12 10v4M12 16.5h.01" />
-    </template>
-    <template v-else-if="nome === 'faisca'">
-      <path d="M12 4l1.8 4.7L18.5 10.5l-4.7 1.8L12 17l-1.8-4.7-4.7-1.8 4.7-1.8z" />
-      <path d="M18 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
-    </template>
-    <path v-else-if="nome === 'enviar'" d="M5 12h13M13 6l6 6-6 6" />
-    <template v-else-if="nome === 'rotina'">
-      <rect x="4" y="5.5" width="16" height="14.5" rx="2" />
-      <path d="M8 3.5v4M16 3.5v4M4 10h16M8 14h3M8 17h6" />
-    </template>
-    <template v-else-if="nome === 'disco'">
-      <ellipse cx="12" cy="6.5" rx="7.5" ry="2.5" />
-      <path d="M4.5 6.5v11c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-11M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5" />
-    </template>
-    <template v-else-if="nome === 'servidor'">
-      <rect x="4" y="5" width="16" height="11" rx="1.5" />
-      <path d="M9 20h6M12 16v4" />
-    </template>
-    <template v-else-if="nome === 'limpeza'">
-      <path d="M14.5 4.5l-5 9" />
-      <path d="M7 13.5h7.5l1.5 6.5H5.5z" />
-      <path d="M9.5 20l.5-3M12.5 20l-.2-3" />
-    </template>
-    <template v-else-if="nome === 'ajustes'">
-      <path d="M4 7.5h9M17 7.5h3M4 16.5h3M11 16.5h9" />
-      <circle cx="15" cy="7.5" r="2" />
-      <circle cx="9" cy="16.5" r="2" />
-    </template>
-    <template v-else-if="nome === 'apps'">
-      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
-      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
-      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
-      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
-    </template>
-    <template v-else-if="nome === 'claude'">
-      <path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4M6 6l2.8 2.8M15.2 15.2 18 18M6 18l2.8-2.8M15.2 8.8 18 6" />
-    </template>
-    <template v-else-if="nome === 'rede'">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M4 12h16M12 4c2.2 2.2 3.3 4.9 3.3 8s-1.1 5.8-3.3 8M12 4c-2.2 2.2-3.3 4.9-3.3 8s1.1 5.8 3.3 8" />
-    </template>
-    <template v-else-if="nome === 'atualizar'">
-      <path d="M19.5 12a7.5 7.5 0 11-2.2-5.3" />
-      <path d="M19.5 4.5v4h-4" />
-    </template>
+  <svg
+    :width="tamanho"
+    :height="tamanho"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path v-for="(d, i) in CAMINHOS[nome] || []" :key="i" :d="d" />
   </svg>
 </template>
