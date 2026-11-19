@@ -320,6 +320,13 @@ O que se viu antes da vigia (registros do Tailscale na VM): quedas em 13/11 (03:
 16/11 (12:55, 17:47) e 18/11 (16:27). Na queda das ~21h de 18/11 a wan e a VM estavam com internet e o DNS respondia
 ao Mac sem falhas: o defeito não foi da Claro.
 
+**19/11, 11:41–11:51, a primeira queda medida:** o servidor perdeu o roteador e a internet ao mesmo tempo, enquanto
+o Mac, no Wi-Fi, alcançava o roteador e a internet (IPv4 e IPv6) normalmente, mas não o DNS. Ou seja: a Claro e o
+roteador estavam de pé, e o que caiu foi a ligação do servidor com o roteador; sem o AdGuard, a casa toda ficou sem
+DNS. Voltou quando o roteador foi reiniciado (o link do cabo renegociou). Daí a causa **servidor fora da rede**,
+que junta os dois sensores: servidor sem roteador enquanto o Mac o alcança. Na hora, a tela não abre (o Hub está no
+servidor); a queda aparece depois, com o que o Mac guardou.
+
 ### H16. O Hub é a fonte do design system; quarta versão, de espaço (18/11/2026)
 
 - **O quê:** o `docs/DESIGN-SYSTEM.md`, o `style.css` e a vitrine `#/design` do Hub viram a
