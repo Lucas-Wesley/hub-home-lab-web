@@ -22,6 +22,8 @@ test('abre no Início: a página é o campo, com texto, checklist, lista e toggl
   await page.keyboard.press('Enter')
   await page.keyboard.type('- Ideia solta')
   await page.keyboard.press('Enter')
+  await page.keyboard.type('Outra ideia')
+  await page.keyboard.press('Enter')
   await page.keyboard.press('Enter')
 
   // "> " cria o toggle; Enter no título vai para dentro, onde cabe uma lista.
@@ -92,6 +94,21 @@ test('abre no Início: a página é o campo, com texto, checklist, lista e toggl
   await expect.poll(ordem).toEqual(['Pão', 'Café'])
   await page.keyboard.press('Alt+Shift+ArrowUp')
   await expect.poll(ordem).toEqual(['Café', 'Pão'])
+
+  // No tópico, o mouse vai do texto até a alça passando pelo pontinho, sem a alça sumir no caminho.
+  const ideias = () => folha.locator('ul:not([data-type])').first().locator(':scope > li').allInnerTexts()
+  await expect.poll(ideias).toEqual(['Ideia solta', 'Outra ideia'])
+  const outraIdeia = await folha.getByText('Outra ideia', { exact: true }).boundingBox()
+  await page.mouse.move(outraIdeia.x + 20, outraIdeia.y + outraIdeia.height / 2)
+  await expect(alca).toBeVisible()
+  const caixaAlca = await alca.boundingBox()
+  await page.mouse.move(caixaAlca.x + caixaAlca.width / 2, caixaAlca.y + caixaAlca.height / 2, { steps: 12 })
+  await expect(alca).toBeVisible()
+  const ideia = await folha.getByText('Ideia solta', { exact: true }).boundingBox()
+  await page.mouse.down()
+  await page.mouse.move(ideia.x + 40, ideia.y + 4, { steps: 8 })
+  await page.mouse.up()
+  await expect.poll(ideias).toEqual(['Outra ideia', 'Ideia solta'])
 
   // Fica salvo.
   await page.waitForResponse((r) => r.url().endsWith('/api/inicio') && r.request().method() === 'PUT')

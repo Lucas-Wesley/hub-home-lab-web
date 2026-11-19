@@ -127,10 +127,27 @@ function alcaView(view) {
     mostrar(liDe(node.nodeType === 3 ? node.parentElement : node))
   }
 
+  // O item na altura do mouse: o mais fundo cuja caixa a contém (o filho vem depois do pai).
+  function liNaAltura(y) {
+    let achado = null
+    for (const li of view.dom.querySelectorAll('li')) {
+      const r = li.getBoundingClientRect()
+      if (r.height && y >= r.top && y < r.bottom) achado = li
+    }
+    return achado
+  }
+
+  // Segue a altura do mouse numa faixa que inclui a margem à esquerda do editor, onde ficam o pontinho
+  // do tópico e a própria alça: atravessar essa margem não esconde a alça.
   function aoMover(e) {
-    if (arraste || toque.matches || e.pointerType === 'touch') return
-    if (e.target === alca || alca.contains(e.target)) return
-    const li = liDe(e.target)
+    if (arraste || toque.matches || e.pointerType === 'touch' || !view.dom.isConnected) return
+    const r = view.dom.getBoundingClientRect()
+    const naFaixa = e.clientY >= r.top && e.clientY < r.bottom && e.clientX >= r.left - 48 && e.clientX <= r.right
+    const sobreAlca = e.target === alca || alca.contains(e.target)
+    const sobreEditor = view.dom.contains(e.target) || e.clientX < r.left
+    if (!naFaixa || (!sobreAlca && !sobreEditor)) return atual && esconder()
+    if (sobreAlca) return
+    const li = liNaAltura(e.clientY)
     if (li !== atual) mostrar(li)
   }
 
@@ -204,13 +221,7 @@ function alcaView(view) {
     soltar()
   }
 
-  const sair = (e) => {
-    if (!arraste && e.relatedTarget !== alca && !alca.contains(e.relatedTarget) && !view.dom.contains(e.relatedTarget)) esconder()
-  }
-
-  view.dom.addEventListener('pointermove', aoMover)
-  view.dom.addEventListener('pointerleave', sair)
-  alca.addEventListener('pointerleave', sair)
+  document.addEventListener('pointermove', aoMover, { passive: true })
   alca.addEventListener('pointerdown', comecar)
   alca.addEventListener('pointermove', arrastar)
   alca.addEventListener('pointerup', soltar)
@@ -225,8 +236,7 @@ function alcaView(view) {
       else if (atual) mostrar(atual)
     },
     destroy() {
-      view.dom.removeEventListener('pointermove', aoMover)
-      view.dom.removeEventListener('pointerleave', sair)
+      document.removeEventListener('pointermove', aoMover)
       alca.remove()
       linha.remove()
     },
