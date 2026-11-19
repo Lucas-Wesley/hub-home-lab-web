@@ -327,6 +327,11 @@ DNS. Voltou quando o roteador foi reiniciado (o link do cabo renegociou). Daí a
 que junta os dois sensores: servidor sem roteador enquanto o Mac o alcança. Na hora, a tela não abre (o Hub está no
 servidor); a queda aparece depois, com o que o Mac guardou.
 
+**A causa, no Proxmox:** a placa Intel I219-LM do M920q (driver `e1000e`) travava ("Detected Hardware Unit Hang") com
+TSO/GSO/GRO ligados — em 13/11 03:01, 15/11 23:43, 16/11 17:46, 18/11 16:25 e 19/11 11:41, todas as quedas. Corrigido em
+19/11 com `post-up /usr/sbin/ethtool -K nic0 tso off gso off gro off` no `/etc/network/interfaces` do Proxmox (a
+cópia de antes ficou em `interfaces.antes-e1000e`).
+
 ### H16. O Hub é a fonte do design system; quarta versão, de espaço (18/11/2026)
 
 - **O quê:** o `docs/DESIGN-SYSTEM.md`, o `style.css` e a vitrine `#/design` do Hub viram a
