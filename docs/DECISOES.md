@@ -337,6 +337,20 @@ ao Mac sem falhas: o defeito não foi da Claro.
   Corrigido um seletor da Rotina (`.corpo:hover .nome`) que casava com o `.corpo` do App e pintava
   todos os nomes de azul com o mouse em qualquer lugar da tela.
 
+### H17. Início: arrastar itens e não apagar o que outro aparelho escreveu (18/11/2026)
+
+- **Arrastar:** item de lista e de checklist ganha uma alça (⋮⋮) à esquerda, como no Notion. No
+  computador ela aparece no item sob o mouse; no celular, no item onde está o cursor (segurar e
+  arrastar com o dedo). O item vai com o que estiver recuado dentro dele, só entre itens do mesmo
+  tipo. Pelo teclado: Alt+Shift+↑/↓. Fica em `frontend/src/arrastar.js` (sem biblioteca: a alça do
+  Tiptap usa o arrastar do navegador, que não funciona no toque).
+- **Texto sumindo:** a página é uma linha só no banco e quem salvava por último ganhava. Uma aba ou
+  o app do celular parado com a versão velha apagava, no primeiro toque, o que fora escrito no
+  computador. Agora o salvar manda a versão que o aparelho abriu (`base`); se a página mudou depois,
+  o servidor responde 409 com a atual, que vai para a tela (com aviso). Ao voltar para o app, a
+  página é buscada de novo, e o editor não salva mais quando nada mudou (ele salvava ao abrir, o
+  que bastava para a outra aba parecer velha).
+
 ## Próximos passos
 
 - [ ] Criar o token do Proxmox (H3) e conferir a tela Servidor com os números reais.

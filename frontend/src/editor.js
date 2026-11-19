@@ -5,6 +5,7 @@ import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { Placeholder } from '@tiptap/extensions'
 import { TextSelection } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
+import { ArrastarItens } from './arrastar.js'
 
 // Troca o parágrafo do cursor por um toggle aberto: o texto vira o título e o cursor fica nele.
 // Texto e título são as linhas "soltas": viram toggle, recebem o menu do "/".
@@ -197,6 +198,7 @@ export function extensoes(menu) {
     }),
     TrocaDeLista,
     TituloVoltaATexto,
+    ArrastarItens,
     teclasDoMenu(menu),
   ]
 }

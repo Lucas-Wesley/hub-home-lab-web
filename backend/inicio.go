@@ -32,6 +32,9 @@ func (a *app) handleInicio(w http.ResponseWriter, r *http.Request) {
 func (a *app) handleSalvarInicio(w http.ResponseWriter, r *http.Request) {
 	var corpo struct {
 		Conteudo json.RawMessage `json:"conteudo"`
+		// A versão que o aparelho abriu. Se a página mudou depois (em outro aparelho ou outra aba),
+		// salvar por cima apagaria o que foi escrito lá: responde 409 com a página atual.
+		Base *string `json:"base"`
 	}
 	if !lerCorpo(w, r, &corpo) {
 		return
@@ -48,6 +51,18 @@ func (a *app) handleSalvarInicio(w http.ResponseWriter, r *http.Request) {
 		erroJSON(w, http.StatusBadRequest, "Documento inválido.")
 		return
 	}
+	if corpo.Base != nil {
+		var atual string
+		err := a.db.QueryRowContext(r.Context(), `SELECT atualizada_em FROM inicio WHERE id = 1`).Scan(&atual)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			falha(w, err)
+			return
+		}
+		if atual != *corpo.Base {
+			a.handleInicio(conflito{w}, r)
+			return
+		}
+	}
 	agora := a.agora()
 	_, err := a.db.ExecContext(r.Context(), `INSERT INTO inicio (id, conteudo, atualizada_em) VALUES (1, ?, ?)
 		ON CONFLICT (id) DO UPDATE SET conteudo = excluded.conteudo, atualizada_em = excluded.atualizada_em`,
@@ -58,3 +73,8 @@ func (a *app) handleSalvarInicio(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, paginaInicio{Conteudo: compacto.Bytes(), AtualizadaEm: agora})
 }
+
+// conflito troca o 200 da resposta por 409, para devolver a página atual junto com o aviso.
+type conflito struct{ http.ResponseWriter }
+
+func (c conflito) WriteHeader(int) { c.ResponseWriter.WriteHeader(http.StatusConflict) }

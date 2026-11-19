@@ -71,6 +71,52 @@ test('abre no Início: a página é o campo, com texto, checklist, lista e toggl
   await expect(folha.locator('li[data-checked="true"]', { hasText: 'Pão' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Abrir o toggle' })).toBeVisible()
   await expect(folha.getByText('Passagem')).toBeHidden()
+
+  // Arrastar pela alça (⋮⋮), como no Notion: o Café sobe para antes do Pão.
+  const ordem = () => folha.locator('ul[data-type="taskList"]').first().locator(':scope > li > div').allInnerTexts()
+  await expect.poll(ordem).toEqual(['Pão', 'Café'])
+  await folha.locator('li', { hasText: 'Café' }).hover()
+  const alca = page.getByRole('button', { name: 'Arrastar para mudar a ordem' })
+  await expect(alca).toBeVisible()
+  const pao = await folha.locator('li', { hasText: 'Pão' }).boundingBox()
+  await alca.hover()
+  await page.mouse.down()
+  await page.mouse.move(pao.x + 60, pao.y + 6, { steps: 8 })
+  await expect(page.locator('.linha-soltar')).toBeVisible()
+  await page.mouse.up()
+  await expect.poll(ordem).toEqual(['Café', 'Pão'])
+
+  // Pelo teclado: Alt+Shift+↓ desce o item onde está o cursor.
+  await folha.getByText('Café', { exact: true }).click()
+  await page.keyboard.press('Alt+Shift+ArrowDown')
+  await expect.poll(ordem).toEqual(['Pão', 'Café'])
+  await page.keyboard.press('Alt+Shift+ArrowUp')
+  await expect.poll(ordem).toEqual(['Café', 'Pão'])
+
+  // Fica salvo.
+  await page.waitForResponse((r) => r.url().endsWith('/api/inicio') && r.request().method() === 'PUT')
+  await page.waitForTimeout(1000)
+  await page.reload()
+  await expect.poll(ordem).toEqual(['Café', 'Pão'])
+
+  // Uma aba esquecida aberta não apaga o que foi escrito em outra: a versão nova vem para ela.
+  const outra = await page.context().newPage()
+  await outra.goto('/')
+  const folhaOutra = outra.getByRole('textbox', { name: 'Início' })
+  await expect(folhaOutra.getByText('Compras da semana')).toBeVisible()
+  await folha.getByText('Compras da semana').click()
+  await page.keyboard.press('End')
+  await page.keyboard.type(' e da feira')
+  await page.waitForResponse((r) => r.url().endsWith('/api/inicio') && r.request().method() === 'PUT')
+  await folhaOutra.getByText('Compras da semana').click()
+  await outra.keyboard.press('End')
+  await outra.keyboard.type(' (velho)')
+  await expect(outra.getByText(/mudado em outro aparelho/)).toBeVisible()
+  await expect(folhaOutra.getByText('Compras da semana e da feira')).toBeVisible()
+  await outra.close()
+  await page.reload()
+  await expect(folha.getByText('Compras da semana e da feira')).toBeVisible()
+  await expect(folha.getByText(/velho/)).toHaveCount(0)
 })
 
 test('Rotina: planeja a semana pelo modelo, remaneja um bloco, marca feito e vê as metas', async ({ page }) => {
