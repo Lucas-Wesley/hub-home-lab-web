@@ -16,7 +16,11 @@ const CAUSAS = {
     cor: 'vermelho',
     fazer: 'Seu roteador está funcionando. Tire só o modem da Claro da tomada por 30 s. Se não voltar em 5 min, o problema é da Claro: ligue para eles.',
   },
-  roteador: { nome: 'Roteador', cor: 'vermelho', fazer: 'O servidor não alcança o roteador. Reinicie só o roteador (o modem pode ficar).' },
+  roteador: {
+    nome: 'Roteador',
+    cor: 'vermelho',
+    fazer: 'O servidor não alcança o roteador: ou o roteador travou, ou o cabo do servidor perdeu a ligação. Tire e recoloque o cabo de rede do servidor; se não voltar, reinicie só o roteador (o modem pode ficar).',
+  },
   dns: { nome: 'DNS (AdGuard)', cor: 'ambar', fazer: 'A internet funciona, mas os nomes não resolvem. Pause o bloqueio aqui embaixo; se não resolver, a VM do servidor pode estar travada.' },
   wifi: { nome: 'Wi-Fi', cor: 'ambar', fazer: 'O Mac não alcançou o roteador pelo Wi-Fi. A internet da casa pode estar normal pelo cabo.' },
   'so-wifi': {
@@ -25,6 +29,12 @@ const CAUSAS = {
     fazer: 'A casa tinha internet pelo cabo, mas quem estava no Wi-Fi não. O problema é no Wi-Fi do roteador, não na Claro: reinicie só o roteador.',
   },
   internet: { nome: 'Sem internet no Wi-Fi', cor: 'ambar', fazer: 'O Mac alcança o roteador, mas não a internet.' },
+  servidor: {
+    nome: 'Servidor fora da rede',
+    cor: 'vermelho',
+    fazer:
+      'A Claro e o roteador estavam funcionando, mas o servidor perdeu a ligação com o roteador. Sem o AdGuard, que roda nele, a casa fica sem DNS e parece sem internet. Tire e recoloque o cabo de rede do servidor; se não voltar, reinicie o roteador.',
+  },
   ipv6: { nome: 'IPv6 da Claro', cor: 'ambar', fazer: 'O IPv4 funciona; alguns apps podem ficar lentos ou falhar. Costuma voltar sozinho.' },
 }
 const causa = (c) => CAUSAS[c] || { nome: c, cor: 'ambar', fazer: '' }
@@ -47,6 +57,7 @@ const agora = computed(() => {
   const s = d.servidor && idade(d.servidor.em) < 45 ? d.servidor : null
   const mac = d.mac && idade(d.mac.em) < 90 ? d.mac : null
   if (!s) return { estado: 'sem-dados' }
+  if (s.causa === 'roteador' && mac && mac.roteador >= 0) return { estado: 'problema', causa: 'servidor' }
   if (s.causa) return { estado: 'problema', causa: s.causa }
   if (mac?.causa) return { estado: 'problema', causa: mac.causa === 'internet' ? 'so-wifi' : mac.causa }
   return { estado: 'ok' }

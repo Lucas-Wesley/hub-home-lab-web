@@ -60,6 +60,9 @@ const (
 	causaInternet = "internet"
 	causaSoWiFi   = "so-wifi"
 	causaIPv6     = "ipv6"
+	// O servidor perdeu a ligação com o roteador enquanto o Mac, no Wi-Fi, alcançava o roteador: a
+	// internet estava de pé, mas sem o AdGuard (que roda no servidor) a casa fica sem DNS.
+	causaServidor = "servidor"
 )
 
 type configInternet struct {
@@ -298,22 +301,38 @@ func (a *app) avisarQueda(q *queda) int {
 	return 2
 }
 
-// causaParaMostrar resolve o "internet" do Mac com o que o servidor viu no mesmo período.
+// causaParaMostrar junta o que os dois sensores viram no mesmo período. Cada um sozinho erra: o
+// servidor sem roteador pode ser o roteador travado ou só o cabo do servidor; o Mac sem DNS pode
+// ser o AdGuard ou o servidor fora da rede.
 func (a *app) causaParaMostrar(q queda) string {
-	if q.Sensor != sensorMac || q.Causa != causaInternet {
-		return q.Causa
-	}
 	fim := q.Fim
 	if fim == "" {
 		fim = a.agora()
 	}
-	var causa string
-	err := a.db.QueryRow(`SELECT causa FROM internet_quedas WHERE sensor = ? AND inicio <= ? AND (fim = '' OR fim >= ?) ORDER BY inicio DESC LIMIT 1`,
-		sensorServidor, fim, q.Inicio).Scan(&causa)
-	if err == nil {
-		return causa
+	switch {
+	case q.Sensor == sensorServidor && q.Causa == causaRoteador:
+		// O Mac alcançou o roteador enquanto o servidor não: o defeito é na ponta do servidor.
+		var n int
+		a.db.QueryRow(`SELECT COUNT(*) FROM internet_medidas WHERE sensor = ? AND em BETWEEN ? AND ? AND roteador >= 0`,
+			sensorMac, q.Inicio, fim).Scan(&n)
+		if n >= falhasParaQueda {
+			return causaServidor
+		}
+		return q.Causa
+	case q.Sensor == sensorMac && (q.Causa == causaInternet || q.Causa == causaDNS):
+		var causa string
+		err := a.db.QueryRow(`SELECT causa FROM internet_quedas WHERE sensor = ? AND inicio <= ? AND (fim = '' OR fim >= ?) ORDER BY inicio DESC LIMIT 1`,
+			sensorServidor, fim, q.Inicio).Scan(&causa)
+		switch {
+		case err == nil && causa == causaRoteador:
+			return causaServidor
+		case err == nil && q.Causa == causaInternet:
+			return causa
+		case q.Causa == causaInternet:
+			return causaSoWiFi
+		}
 	}
-	return causaSoWiFi
+	return q.Causa
 }
 
 func nomeDaCausa(c string) string {
@@ -330,6 +349,8 @@ func nomeDaCausa(c string) string {
 		return "só no Wi-Fi"
 	case causaIPv6:
 		return "IPv6 da Claro"
+	case causaServidor:
+		return "servidor fora da rede"
 	}
 	return c
 }
@@ -337,7 +358,7 @@ func nomeDaCausa(c string) string {
 func oQueFazer(c string) string {
 	switch c {
 	case causaRoteador:
-		return "O servidor não alcança o roteador. Reinicie só o roteador."
+		return "O servidor não alcança o roteador. Ou o roteador travou, ou o cabo do servidor perdeu a ligação. Tire e recoloque o cabo de rede do servidor; se não voltar, reinicie só o roteador."
 	case causaClaro:
 		return "O roteador está de pé, mas a Claro não responde. Tire só o modem da tomada por 30 s; se não voltar em 5 min, é com a Claro."
 	case causaDNS:
@@ -352,6 +373,8 @@ func oQueFazerDepois(c string) string {
 		return "O roteador ficou de pé o tempo todo."
 	case causaSoWiFi:
 		return "A casa tinha internet pelo cabo; o problema foi no Wi-Fi do roteador."
+	case causaServidor:
+		return "A Claro e o roteador estavam de pé; o servidor perdeu a ligação com o roteador e, sem o AdGuard, a casa ficou sem DNS."
 	}
 	return ""
 }

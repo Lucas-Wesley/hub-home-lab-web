@@ -314,3 +314,37 @@ func TestInternetDesligada(t *testing.T) {
 		t.Fatalf("status %d: %+v", s, r)
 	}
 }
+
+// O caso de 19/11: o servidor perde o roteador, o Mac continua alcançando o roteador e a internet,
+// mas fica sem DNS (o AdGuard está no servidor). A causa é o servidor, nos dois.
+func TestInternetServidorForaDaRede(t *testing.T) {
+	e := comInternet(t)
+	e.rodadas(2)
+	inicio := e.agora
+	e.falhar["roteador"], e.falhar["1.1.1.1"], e.falhar["8.8.8.8"] = true, true, true
+	e.app.internet.pingar = func(_ context.Context, ip string) int { return -1 }
+	e.rodadas(9)
+	e.app.internet.pingar = func(_ context.Context, ip string) int { return 12 }
+	e.rodadas(3)
+
+	var ms []medidaNet
+	for i := range 12 {
+		m := medidaNet{Roteador: 3, Internet: 28, Internet6: 30, DNS: 90, Em: hora(inicio.Add(time.Duration(i) * intervaloDaInternet))}
+		if i >= 1 && i <= 9 {
+			m.DNS = -1
+		}
+		ms = append(ms, m)
+	}
+	e.pedir("POST", "/api/internet/medidas", ms, nil)
+
+	var r respostaInternet
+	e.pedir("GET", "/api/internet", nil, &r)
+	if len(r.Quedas) != 2 {
+		t.Fatalf("quedas: %+v", r.Quedas)
+	}
+	for _, q := range r.Quedas {
+		if q.Causa != causaServidor {
+			t.Errorf("%s: causa %q, queria servidor", q.Sensor, q.Causa)
+		}
+	}
+}
