@@ -332,6 +332,12 @@ TSO/GSO/GRO ligados — em 13/11 03:01, 15/11 23:43, 16/11 17:46, 18/11 16:25 e 
 19/11 com `post-up /usr/sbin/ethtool -K nic0 tso off gso off gro off` no `/etc/network/interfaces` do Proxmox (a
 cópia de antes ficou em `interfaces.antes-e1000e`).
 
+**Avisos repetidos (20/11):** as quedas são refeitas das medidas das últimas 24 h, e a chave delas era o início. Um
+dia depois da queda de 19/11 11:41, a janela foi apagando o começo dela medida por medida, e cada resto virou uma
+queda "nova" com aviso de "voltou": ~60 avisos entre 11:45 e 11:50 de 20/11, sem queda nenhuma. Agora a queda
+recalculada que começa dentro de uma já gravada (ou numa ainda aberta) é essa mesma — atualiza, nunca cria nem avisa
+de novo. As duplicadas foram apagadas do banco.
+
 ### H16. O Hub é a fonte do design system; quarta versão, de espaço (18/11/2026)
 
 - **O quê:** o `docs/DESIGN-SYSTEM.md`, o `style.css` e a vitrine `#/design` do Hub viram a

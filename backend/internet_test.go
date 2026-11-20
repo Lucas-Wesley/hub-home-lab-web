@@ -141,7 +141,10 @@ func (n *ntfyFalso) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	n.mu.Lock()
 	n.titulos = append(n.titulos, c.Title)
 	n.mu.Unlock()
-	n.chegou <- struct{}{}
+	select { // sem travar quando chegam mais avisos do que o teste espera
+	case n.chegou <- struct{}{}:
+	default:
+	}
 }
 
 func (n *ntfyFalso) esperar(t *testing.T, quantos int) []string {
@@ -346,5 +349,44 @@ func TestInternetServidorForaDaRede(t *testing.T) {
 		if q.Causa != causaServidor {
 			t.Errorf("%s: causa %q, queria servidor", q.Sensor, q.Causa)
 		}
+	}
+}
+
+// 20/11: a janela de 24 h apagava o começo de uma queda antiga medida por medida, e cada pedaço
+// que sobrava virava uma queda "nova" com aviso de "voltou" — 30 avisos de uma queda só.
+func TestQuedaAntigaSaindoDaJanelaNaoAvisaDeNovo(t *testing.T) {
+	e := comInternet(t)
+	t0 := e.agora
+	var ms []medidaNet
+	for i := range 90 {
+		c := ""
+		if i >= 30 && i < 60 {
+			c = causaClaro
+		}
+		ms = append(ms, medidaNet{Sensor: sensorServidor, Em: hora(t0.Add(time.Duration(i) * intervaloDaInternet)), Causa: c})
+	}
+	if err := e.app.gravarMedidas(ms); err != nil {
+		t.Fatal(err)
+	}
+	e.agora = t0.Add(20 * time.Minute)
+	if err := e.app.atualizarQuedas(sensorServidor); err != nil {
+		t.Fatal(err)
+	}
+	e.ntfy.esperar(t, 1)
+
+	// Um dia depois, a janela passa por cima do começo da queda, 10 s de cada vez.
+	for e.agora = t0.Add(24*time.Hour + 4*time.Minute); e.agora.Before(t0.Add(24*time.Hour + 11*time.Minute)); e.agora = e.agora.Add(intervaloDaInternet) {
+		if err := e.app.atualizarQuedas(sensorServidor); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var n int
+	e.app.db.QueryRow(`SELECT COUNT(*) FROM internet_quedas`).Scan(&n)
+	time.Sleep(100 * time.Millisecond)
+	e.ntfy.mu.Lock()
+	avisos := len(e.ntfy.titulos)
+	e.ntfy.mu.Unlock()
+	if n != 1 || avisos != 1 {
+		t.Fatalf("%d quedas gravadas e %d avisos; esperava 1 e 1", n, avisos)
 	}
 }

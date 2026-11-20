@@ -264,10 +264,23 @@ func (a *app) atualizarQuedas(sensor string) error {
 	}
 	for _, q := range quedasDe(ms, agora) {
 		var avisada int
-		var fimGravado string
-		err := a.db.QueryRow(`SELECT avisada, fim FROM internet_quedas WHERE sensor = ? AND inicio = ?`, q.Sensor, q.Inicio).Scan(&avisada, &fimGravado)
+		var inicioGravado, fimGravado string
+		// A janela de 24 h corta o começo de uma queda antiga, que reaparece com um início mais tarde a
+		// cada medida apagada da janela (20/11: uma queda de 19/11 virou 30 avisos de "voltou"). Ela é
+		// a mesma queda gravada que já cobria esse início: atualiza essa, nunca cria outra.
+		err := a.db.QueryRow(`SELECT inicio, avisada, fim FROM internet_quedas
+			WHERE sensor = ? AND inicio <= ? AND (inicio = ? OR fim = '' OR fim > ?)
+			ORDER BY inicio DESC LIMIT 1`, q.Sensor, q.Inicio, q.Inicio, q.Inicio).Scan(&inicioGravado, &avisada, &fimGravado)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return err
+		}
+		if err == nil && inicioGravado != q.Inicio {
+			q.Inicio = inicioGravado
+			fim := agora
+			if q.Fim != "" {
+				fim = lerHora(q.Fim)
+			}
+			q.Segundos = int(fim.Sub(lerHora(q.Inicio)).Seconds())
 		}
 		q.avisada = avisada
 		nova := a.avisarQueda(&q)
