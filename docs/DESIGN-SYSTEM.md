@@ -8,7 +8,7 @@ depois, quando o Lucas pedir, é copiada para as outras apps.
 | App | Situação (18/11/2026) |
 |---|---|
 | **Hub** | quarta versão (este documento) |
-| Trilha de Estudo | terceira versão: mesmos tokens de cor, fonte e raio; espaço antigo. O `docs/DESIGN-SYSTEM.md` de lá aponta para cá |
+| Trilha de Estudo | quarta versão desde 20/11 (T45 de lá). O `docs/DESIGN-SYSTEM.md` de lá aponta para cá |
 | Biblioteca, Acervo, Flashcards, Streaming, plugin | segunda versão (10/11); a cópia do documento nelas está desatualizada |
 
 ## Histórico
