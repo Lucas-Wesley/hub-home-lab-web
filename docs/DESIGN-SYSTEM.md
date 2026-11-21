@@ -5,11 +5,12 @@ em `hub.internal/#/design` são a referência de todas as apps: Biblioteca Digit
 Flashcards, Streaming, Trilha de Estudo e as próximas. Mudança de design acontece **aqui primeiro**;
 depois, quando o Lucas pedir, é copiada para as outras apps.
 
-| App | Situação (18/11/2026) |
+| App | Situação (21/11/2026) |
 |---|---|
 | **Hub** | quarta versão (este documento) |
 | Trilha de Estudo | quarta versão desde 20/11 (T45 de lá). O `docs/DESIGN-SYSTEM.md` de lá aponta para cá |
-| Biblioteca, Acervo, Flashcards, Streaming, plugin | segunda versão (10/11); a cópia do documento nelas está desatualizada |
+| Biblioteca Digital | quarta versão desde 21/11 (R42 de lá), com ícone novo da mesma família do da Trilha. O `docs/DESIGN-SYSTEM.md` de lá aponta para cá |
+| Acervo, Flashcards, Streaming, plugin | segunda versão (10/11); a cópia do documento nelas está desatualizada |
 
 ## Histórico
 
@@ -92,6 +93,7 @@ fundos leves (`color-mix` com 16–18% sobre `--fundo`), nunca em texto corrido 
 | Peça | Tokens | Onde |
 |---|---|---|
 | Rotina (Hub) | `--r-azul`, `--r-violeta`, `--r-verde`, `--r-laranja`, `--r-amarelo`, `--r-rosa`, `--r-turquesa`, `--r-cinza`, via as classes `.cor-*` (que definem `--cor`) | fio do bloco, ponto da meta, pedaço da grade |
+| Biblioteca | `--m-amarelo`, `--m-verde`, `--m-azul`, `--m-rosa` (marcações no texto do livro, iguais nos temas); `--fonte-livro` (Literata); `--camera`, `--camera-disparo`; e o tema de leitura **sépia** (os mesmos tokens com papel bege, só no livro aberto) | marcação e citação, texto do livro, câmera do sumário |
 
 ### Tipografia
 
@@ -238,7 +240,8 @@ Prenda o seletor à peça (`.bloco > .corpo:hover .nome`) e não use nomes gené
 - **Tema:** escuro é a base; o claro deriva dos mesmos tokens. Segue o aparelho por padrão, com
   escolha em Ajustes e no botão do pé da lateral (`tema.js`).
 - **Ícone da app:** cada app tem o seu desenho de linha (o do Hub: dois servidores empilhados; o
-  da Trilha: um traço em degraus). Ícones de interface desenhados à mão em `Icone.vue`.
+  da Trilha: um traço em degraus; o da Biblioteca: um livro aberto). Os novos seguem o da Trilha:
+  quadrado `#151515` sem cantos no PNG (serve de `maskable`) e o desenho em traço numa cor de estado. Ícones de interface desenhados à mão em `Icone.vue`.
 - **Vitrine:** `#/design`, sem aba, só pelo endereço. A do Hub é a referência.
 
 ## 6. Levar o design para outra app
