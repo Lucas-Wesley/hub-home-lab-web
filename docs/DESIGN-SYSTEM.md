@@ -5,11 +5,12 @@ em `hub.internal/#/design` são a referência de todas as apps: Biblioteca Digit
 Flashcards, Streaming, Trilha de Estudo e as próximas. Mudança de design acontece **aqui primeiro**;
 depois, quando o Lucas pedir, é copiada para as outras apps.
 
-| App | Situação (21/11/2026) |
+| App | Situação (25/11/2026) |
 |---|---|
 | **Hub** | quarta versão (este documento) |
 | Trilha de Estudo | quarta versão desde 20/11 (T45 de lá). O `docs/DESIGN-SYSTEM.md` de lá aponta para cá |
 | Biblioteca Digital | quarta versão desde 21/11 (R42 de lá), com ícone novo da mesma família do da Trilha. O `docs/DESIGN-SYSTEM.md` de lá aponta para cá |
+| Cortes / YouTube Creator | quarta versão desde 24/11 (`ideias-digitais/canal-de-cortes/app`, repositório privado `youtube-creator`). O `docs/DESIGN-SYSTEM.md` de lá é uma cópia deste, com o aviso de que a fonte é aqui |
 | Acervo, Flashcards, Streaming, plugin | segunda versão (10/11); a cópia do documento nelas está desatualizada |
 
 ## Histórico
